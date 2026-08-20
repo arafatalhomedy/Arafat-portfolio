@@ -1,0 +1,18 @@
+<svg width="680" height="200" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLightWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C6A15B"/>
+      <stop offset="100%" stop-color="#E8CE94"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark -->
+  <rect x="20" y="30" width="140" height="140" rx="30" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="2"/>
+  <line x1="55" y1="132" x2="90" y2="62" stroke="#1E293B" stroke-width="7" stroke-linecap="round"/>
+  <line x1="125" y1="132" x2="90" y2="62" stroke="#1E293B" stroke-width="7" stroke-linecap="round"/>
+  <line x1="68" y1="103" x2="112" y2="103" stroke="url(#accentLightWhite)" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Script wordmark, white text -->
+  <text x="185" y="132" font-family="'Brush Script MT', 'Segoe Script', 'Lucida Handwriting', cursive"
+        font-size="96" fill="#FFFFFF">Arafat</text>
+</svg>

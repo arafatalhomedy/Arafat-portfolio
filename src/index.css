@@ -1,0 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+* {
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
+  cursor: none;
+}
+
+@theme {
+  --color-primary: #5044e5;
+}
+
+.main_div {
+  @apply flex justify-between items-center px-4 sm:px-12 lg:px-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all;
+}
+
+.connect_btn {
+  @apply text-sm max-sm:hidden flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full cursor-pointer hover:scale-103 transition-all;
+}
+
+.Title-1 {
+  @apply bg-gradient-to-r from-[#5044E5] to-[#4d8cea] bg-clip-text text-transparent;
+}
