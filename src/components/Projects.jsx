@@ -20,8 +20,8 @@ const Projects = () => {
             title: "ATS CV Checker",
             description: "An ATS resume checker that compares your CV against a job description, scores how well it would pass automated screening, and highlights which keywords and sections are missing. The backend (Python, Flask) parses PDF/DOCX resumes and scores them using Pandas, NumPy, and scikit-learn for keyword matching and text similarity, while the frontend is built with React.",
             image: assets.cv_checker,
-            github: "https://github.com/arafatalhomedy/ATC-CV-Checker",
-            live: "https://arafatalhomedy.github.io/ATC-CV-Checker/"
+            github: "https://github.com/arafat-ali1",
+            live: "https://github.com/arafat-ali1"
         },
     ]
     return (
