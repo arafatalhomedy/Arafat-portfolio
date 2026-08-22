@@ -3,8 +3,6 @@ import assets from "../assets";
 import ThemeToggleBtn from "./ThemeToggleBtn";
 import { motion } from "motion/react";
 
-
-
 const Navbars = ({ theme, setTheme }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   return (
@@ -12,8 +10,8 @@ const Navbars = ({ theme, setTheme }) => {
       initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
-
-      className="main_div fixed top-0 left-0 w-full z-50">
+      className="main_div fixed top-0 left-0 w-full z-50"
+    >
       <img
         src={
           theme === "dark" ? assets.arafat_logo_light : assets.arafat_logo_dark
@@ -23,7 +21,7 @@ const Navbars = ({ theme, setTheme }) => {
       />
 
       <div
-        className={`text-gray-700 dark:text-white sm:text-sm ${!isMenuOpen ? "max-sm:w-0 overflow-hidden" : "max-sm:w-60 max-sm:pl-10"} z-50 max-sm:fixed top-0 bottom-0 right-0 max-sm:min-h-screen max-sm:h-full max-sm:flex-col max-sm:bg-primary max-sm:text-white max-sm:pt-20 flex sm:items-center gap-5 transition-all`}
+        className={`text-gray-700 dark:text-white sm:text-sm ${!isMenuOpen ? "max-md:w-0 overflow-hidden" : "max-md:w-60 max-md:pl-10"} z-50 max-md:fixed top-0 bottom-0 right-0 max-md:min-h-screen max-md:h-full max-md:flex-col max-md:bg-primary max-md:text-white max-md:pt-20 flex md:items-center gap-5 transition-all`}
       >
         <img
           src={assets.close_icon}
@@ -54,7 +52,7 @@ const Navbars = ({ theme, setTheme }) => {
       </div>
 
       <div
-        className={`flex items-center gap-2 sm:gap-4 ${isMenuOpen ? "max-sm:hidden" : ""}`}
+        className={`flex items-center gap-2 sm:gap-4 ${isMenuOpen ? "max-md:hidden" : ""}`}
       >
         <ThemeToggleBtn theme={theme} setTheme={setTheme} />
 
