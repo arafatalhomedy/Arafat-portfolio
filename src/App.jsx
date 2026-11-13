@@ -9,9 +9,17 @@ import { Toaster } from "react-hot-toast";
 import Footer from "./components/footer";
 
 const App = () => {
-  const [theme, setTheme] = React.useState(
-    localStorage.getItem("theme") ? localStorage.getItem("theme") : "light",
-  );
+  const [theme, setTheme] = React.useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "light" || savedTheme === "dark") {
+      return savedTheme;
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
   const [cursorReady, setCursorReady] = React.useState(false);
   const dotRef = React.useRef(null);
   const outlineRef = React.useRef(null);
@@ -86,14 +94,16 @@ const App = () => {
         {/* Custom Cursor Ring */}
         <div
           ref={outlineRef}
-          className={` hidden md:block fixed top-0 left-0 h-10 w-10 rounded-full border border-white pointer-events-none z-[9999] opacity-0 ${theme === "dark" ? "border-white" : "bg-indigo-200"}`}
+          className={`portfolio-cursor hidden md:block fixed top-0 left-0 h-10 w-10 rounded-full border border-white pointer-events-none z-[9999] opacity-0 ${
+            theme === "dark" ? "border-white" : "bg-indigo-200"
+          }`}
           style={{ transition: "transform 0.1s ease-out" }}
         ></div>
 
         {/* Custom Cursor Dot */}
         <div
           ref={dotRef}
-          className={` hidden md:block fixed top-0 left-0 h-3 w-3 rounded-full border border-white pointer-events-none z-[9999] opacity-0 ${
+          className={`portfolio-cursor hidden md:block fixed top-0 left-0 h-3 w-3 rounded-full border border-white pointer-events-none z-[9999] opacity-0 ${
             theme === "dark" ? "bg-white" : "bg-indigo-600"
           }`}
         >

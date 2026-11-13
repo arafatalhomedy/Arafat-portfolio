@@ -1,48 +1,84 @@
-import React from 'react';
-import assets from '../assets';
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
-const ServiceCard = ({ Service, index }) => {
-    const [position, setposition] = React.useState({ x: 0, y: 0 })
-    const [isHover, setIsHover] = React.useState(false);
+function ServiceIcon({ type }) {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {type === "web" && (
+        <>
+          <rect x="2" y="3" width="20" height="18" rx="3" />
+          <path d="M2 8h20m-15 5-2 2 2 2m10-4 2 2-2 2m-4-5-2 6" />
+        </>
+      )}
 
-    const divref = React.useRef(null);
+      {type === "ai" && (
+        <>
+          <path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z" />
+          <path d="M20 2v4m-2-2h4M4 18v4m-2-2h4" />
+        </>
+      )}
 
-
-    const handleMouseMove = (e) => {
-        const bounds = divref.current.getBoundingClientRect();
-        setposition({
-            x: e.clientX - bounds.left,
-            y: e.clientY - bounds.top
-        })
-    }
-    const handleMouseLeave = () => {
-        setIsHover(false);
-    }
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-            viewport={{ once: true }}
-            className="relative overflow-hidden max-w-lg w-full h-full m-2 sm:m-4 rounded-x1 border border-gray-200 dark:border-gray-700 shadow-md shadow-2xl shadow-gray-100 dark:shadow-white/10" ref={divref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onMouseEnter={() => setIsHover(true)}>
-
-            <div className={`pointer-events-none blur-2xl rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 w-[300px] h-[300px] absolute z-0 transition-opacity duration-500 mix-blend-multiply dark:mix-blend-lighten ${isHover ? "opacity-70" : "opacity-0"}`} style={{ top: position.y - 150, left: position.x - 150 }} />
-            <div className='flex items-center gap-10 p-8 hover:p-7.5 hover:m-0.5 transition-all rounded-[10px] bg-white dark:bg-gray-900 z-10 relative h-full'>
-
-                <div className='bg-gray-100 dark:bg-gray-700 rounded-full'>
-                    <img src={Service.icon} alt="" className='max-w-24 bg-white dark:bg-gray-900 rounded-full m-2' />
-                </div>
-
-                <div className='flex flex-col gap-2'>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{Service.title}</h3>
-                    <p className="text-sm font-medium text-gray-500 dark:text-white/75">{Service.description}</p>
-                </div>
-
-            </div>
-
-        </motion.div >
-    )
+      {type === "model" && (
+        <>
+          <circle cx="5" cy="5" r="2" />
+          <circle cx="19" cy="5" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="5" cy="19" r="2" />
+          <circle cx="19" cy="19" r="2" />
+          <path d="m6.5 6.5 4 4m3-0 4-4m-11 11 4-4m3 0 4 4" />
+        </>
+      )}
+    </svg>
+  );
 }
 
-export default ServiceCard;
+export default function ServiceCard({ service, index }) {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <motion.article
+      className="service-card"
+      initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.1,
+      }}
+      whileHover={
+        reduceMotion ? undefined : { y: -8, transition: { duration: 0.25 } }
+      }
+    >
+      <div className="service-card-top">
+        <div className="service-card-icon">
+          <ServiceIcon type={service.icon} />
+        </div>
+
+        <span className="service-card-number" aria-hidden="true">
+          {service.id}
+        </span>
+      </div>
+
+      <p className="service-card-category">{service.category}</p>
+
+      <h3 className="service-card-title">{service.title}</h3>
+
+      <p className="service-card-description">{service.description}</p>
+
+      <ul className="service-card-tags" aria-label="Focus areas">
+        {service.tags.map((tag) => (
+          <li key={tag}>{tag}</li>
+        ))}
+      </ul>
+    </motion.article>
+  );
+}

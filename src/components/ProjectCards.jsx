@@ -1,57 +1,116 @@
-import React from "react";
+import { motion, useReducedMotion } from "motion/react";
 
-const ProjectCard = ({ project }) => {
-  const [expanded, setExpanded] = React.useState(false);
+function ArrowIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 17 17 7M7 7h10v10" />
+    </svg>
+  );
+}
+
+export default function ProjectCard({ project, index }) {
+  const reduceMotion = useReducedMotion();
+  const previewUrl = project.live || project.github;
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:scale-102 duration-500 transition-all shadow-sm">
-      <img
-        src={project.image}
-        className="w-full h-48 object-cover rounded-t-xl"
-        alt=""
-      />
-      <div className="p-5">
-        <h3 className="mt-3 mb-2 text-lg font-semibold">{project.title}</h3>
-        <p
-          className={`text-sm opacity-60 w-5/6 ${expanded ? "" : "line-clamp-3"}`}
-        >
-          {project.description}
-        </p>
+    <motion.article
+      className="project-card"
+      initial={reduceMotion ? false : { opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{
+        duration: 0.55,
+        delay: index * 0.12,
+      }}
+      whileHover={
+        reduceMotion
+          ? undefined
+          : {
+              y: -6,
+              transition: { duration: 0.25 },
+            }
+      }
+    >
+      <a
+        className="project-preview"
+        href={previewUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={
+          project.live
+            ? `Open ${project.title} live demo`
+            : `View ${project.title} repository`
+        }
+      >
+        <img
+          src={project.image}
+          alt={`${project.title} screenshot`}
+          loading="lazy"
+        />
 
-        {expanded && (
-          <div className="mt-3 space-y-1">
-            <p className="text-sm break-words">
-              Github:{" "}
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                View repository
-              </a>
-            </p>
-            <p className="text-sm break-words">
-              Live:{" "}
-              <a
-                href={project.live}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                View Project
-              </a>
-            </p>
-          </div>
-        )}
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="mt-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+        <span className="project-preview-shade" />
+
+        <span className="project-number" aria-hidden="true">
+          {project.id}
+        </span>
+
+        <span className="project-preview-button">
+          <ArrowIcon />
+        </span>
+      </a>
+
+      <div className="project-content">
+        <p className="project-category">{project.category}</p>
+
+        <h3 className="project-name">{project.title}</h3>
+
+        <p className="project-description">{project.description}</p>
+
+        <ul
+          className="project-tags"
+          aria-label={`${project.title} technologies`}
         >
-          {expanded ? "Show less" : "Read more"}
-        </button>
+          {project.tags.map((tag) => (
+            <li key={tag}>{tag}</li>
+          ))}
+        </ul>
+
+        <div className="project-links">
+          <a
+            className="project-code-link"
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`View ${project.title} source code`}
+          >
+            Source code
+            <ArrowIcon />
+          </a>
+
+          {project.live && (
+            <a
+              className="project-demo-link"
+              href={project.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${project.title} live demo`}
+            >
+              Live demo
+              <ArrowIcon />
+            </a>
+          )}
+        </div>
       </div>
-    </div>
+    </motion.article>
   );
-};
-export default ProjectCard;
+}

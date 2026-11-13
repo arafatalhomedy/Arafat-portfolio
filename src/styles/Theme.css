@@ -1,0 +1,250 @@
+@reference "../index.css";
+
+/* Page */
+body,
+#root {
+  @apply bg-page text-ink;
+}
+
+/* Section backgrounds */
+body .portfolio-hero#head,
+body .services-section,
+body .skills-section,
+body .work-section,
+body .contact-section,
+body .signature-footer {
+  @apply bg-page text-ink;
+}
+
+/* Navbar */
+body .portfolio-navbar {
+  @apply border-line bg-none bg-navbar text-ink
+    shadow-[0_16px_44px_var(--theme-shadow)];
+}
+
+body .portfolio-mobile-menu {
+  @apply border-line bg-panel text-ink
+    shadow-[0_20px_50px_var(--theme-shadow)];
+}
+
+body .portfolio-brand {
+  @apply text-accent-ink;
+}
+
+/* Secondary surfaces */
+body
+  :is(
+    .portfolio-nav-links,
+    .portfolio-theme-toggle,
+    .portfolio-menu-toggle,
+    .hero-secondary-button,
+    .skills-filters,
+    .skills-arrow,
+    .skills-autoplay,
+    .work-arrows button,
+    .work-tags li,
+    .contact-socials a
+  ) {
+  @apply border-line bg-panel-soft;
+}
+
+/* Main panels */
+body
+  :is(
+    .service-card,
+    .skill-tile,
+    .work-stage,
+    .work-details,
+    .contact-form,
+    .signature-footer-top-button
+  ) {
+  @apply bg-linear-to-br from-panel-raised to-panel;
+}
+
+body
+  :is(
+    .service-card,
+    .skill-tile,
+    .skills-stage,
+    .work-stage,
+    .contact-form,
+    .signature-footer-top-button,
+    .signature-footer-bottom
+  ) {
+  @apply border-line;
+}
+
+body .work-image-link {
+  @apply bg-panel-soft;
+}
+
+/* Main text */
+body
+  :is(
+    .hero-role,
+    .service-card-title,
+    .skill-tile h3,
+    .work-details h3,
+    .contact-form-heading h3,
+    .contact-field label
+  ) {
+  @apply text-ink;
+}
+
+/* Descriptions and secondary text */
+body
+  :is(
+    .hero-description,
+    .hero-socials a,
+    .hero-scroll-link,
+    .hero-secondary-button,
+    .services-intro,
+    .service-card-description,
+    .skill-tile p,
+    .skills-hint,
+    .skills-filter,
+    .work-description,
+    .work-source-link,
+    .work-github,
+    .contact-description,
+    .contact-form-note,
+    .contact-socials a,
+    .portfolio-nav-links a,
+    .portfolio-mobile-links a,
+    .signature-footer-nav a,
+    .signature-footer-socials a
+  ) {
+  @apply text-muted;
+}
+
+/* Smaller labels */
+body
+  :is(
+    .hero-eyebrow,
+    .services-eyebrow,
+    .skills-eyebrow,
+    .work-eyebrow,
+    .contact-eyebrow,
+    .service-card-number,
+    .signature-footer-role,
+    .signature-footer-copyright
+  ) {
+  @apply text-quiet;
+}
+
+/* Indigo accents */
+body
+  :is(
+    .service-card-category,
+    .skills-count,
+    .skills-hint > span,
+    .work-tab-number,
+    .work-project-meta,
+    .portfolio-theme-toggle,
+    .portfolio-menu-toggle,
+    .skills-arrow,
+    .skills-autoplay,
+    .signature-footer-top-button
+  ) {
+  @apply text-accent-ink;
+}
+
+body
+  :is(.services-title > span, .skills-title > span, .work-heading h2 > span) {
+  @apply bg-none text-accent-ink;
+}
+
+/* Gradient lettering */
+body :is(.hero-name > span, .contact-title > span, .signature-footer-letter) {
+  @apply bg-linear-to-b
+    from-accent-from to-accent-to
+    bg-clip-text text-transparent;
+}
+
+/* Project tabs */
+body .work-tab {
+  @apply text-muted;
+}
+
+body .work-tab:hover,
+body .work-tab[aria-pressed="true"] {
+  @apply text-ink;
+}
+
+body .work-navigation {
+  @apply border-line;
+}
+
+body .work-tags li {
+  @apply text-muted;
+}
+
+/* Service icons and tags */
+body .service-card-icon {
+  @apply text-accent-ink;
+}
+
+body .service-card-tags {
+  @apply border-line;
+}
+
+body .service-card-tags li {
+  @apply border-line bg-panel-soft text-muted;
+}
+
+/* Connecting lights */
+body .skill-connector-light {
+  @apply bg-accent-ink;
+}
+
+/* Contact fields */
+body .contact-field input,
+body .contact-field textarea {
+  @apply border-line bg-panel-soft text-ink;
+}
+
+body .contact-field input::placeholder,
+body .contact-field textarea::placeholder {
+  @apply text-quiet;
+}
+
+body .contact-field input:focus,
+body .contact-field textarea:focus {
+  @apply border-primary/60 bg-panel
+    ring-2 ring-primary/15;
+}
+
+body .contact-feedback[data-type="success"] {
+  @apply text-feedback-success;
+}
+
+body .contact-feedback[data-type="error"] {
+  @apply text-feedback-error;
+}
+
+/* Secondary-link hover colors */
+body
+  :is(
+    .portfolio-nav-links a:hover,
+    .portfolio-mobile-links a:hover,
+    .portfolio-theme-toggle:hover,
+    .hero-socials a:hover,
+    .hero-scroll-link:hover,
+    .hero-secondary-button:hover,
+    .work-github:hover,
+    .work-source-link:hover,
+    .contact-socials a:hover,
+    .signature-footer-nav a:hover,
+    .signature-footer-socials a:hover
+  ) {
+  @apply text-accent-ink;
+}
+
+/* Selected filters stay readable on indigo */
+body .skills-filter[aria-pressed="true"] {
+  @apply text-white;
+}
+
+body .skills-autoplay[aria-pressed="true"] {
+  @apply bg-primary/15 text-accent-ink;
+}

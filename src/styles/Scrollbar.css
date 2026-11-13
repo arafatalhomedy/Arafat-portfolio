@@ -1,0 +1,54 @@
+@reference "../index.css";
+
+/* Reserve space to prevent horizontal layout shifts */
+html {
+  @apply [scrollbar-gutter:stable];
+}
+
+/* Chrome, Edge and Safari */
+@supports selector(::-webkit-scrollbar) {
+  html {
+    @apply [scrollbar-width:auto]
+      [scrollbar-color:auto];
+  }
+
+  html::-webkit-scrollbar {
+    @apply w-3 h-3;
+  }
+
+  html::-webkit-scrollbar-track {
+    @apply bg-page;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    @apply min-h-12
+      rounded-full border-[3px] border-solid border-page
+      bg-linear-to-b from-accent-from to-accent-to
+      [background-clip:padding-box];
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    @apply border-2
+      from-primary to-accent-to;
+  }
+
+  html::-webkit-scrollbar-thumb:active {
+    @apply bg-none bg-primary;
+  }
+
+  html::-webkit-scrollbar-button {
+    @apply hidden size-0;
+  }
+
+  html::-webkit-scrollbar-corner {
+    @apply bg-page;
+  }
+}
+
+/* Standard fallback, including Firefox */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    @apply [scrollbar-width:thin]
+      [scrollbar-color:var(--theme-accent-ink)_var(--theme-page)];
+  }
+}

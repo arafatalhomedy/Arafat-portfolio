@@ -1,101 +1,214 @@
-// New file: src/components/Footer.jsx
-import React from "react";
-import assets from "../assets";
-import { motion } from "motion/react";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from "motion/react";
 
-const Footer = ({ theme }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+import "../styles/Footer.css";
 
-            className="bg-slate-50 dark:bg-gray-900 pt-10 mt-20 sm:mt-40 px-4 sm:px-10 lg:px-24 xl:px-20">
+const navigation = [
+  { label: "Home", href: "#head" },
+  { label: "Services", href: "#services" },
+  { label: "Skills", href: "#skills" },
+  { label: "Projects", href: "#projects" },
+  { label: "Contact", href: "#connect" },
+];
 
-            {/*footer top*/}
+const socials = [
+  {
+    label: "GitHub",
+    href: "https://github.com/arafatalhomedy",
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/arafat-ali-8686-ali/",
+  },
+];
 
-            <div className="flex justify-between lg:items-center max-lg:flex-col gap-10 pb-10">
-                <motion.div
-                    initial={{ opacity: 0, y: -30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    viewport={{ once: true }}
+function ArrowIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M7 17 17 7M7 7h10v10" />
+    </svg>
+  );
+}
 
-                    className="space-y-5 text-sm text-gray-700 dark:text-gray-400">
-                    <img src={theme === "dark" ? assets.arafat_logo_light : assets.arafat_logo_dark} className="w-32 h-12 object-contain" />
-                    <p className="max-w-md mt-5">A developer who never stops learning, always looking for the next challenge to solve. </p>
-                    <ul className="flex gap-8">
-                        <li>
-                            <a href="#hero" className="hover:text-primary">Home</a>
-                        </li>
-                        <li>
-                            <a href="#services" className="hover:text-primary">Services</a>
-                        </li>
-                        <li>
-                            <a href="#skills" className="hover:text-primary">Skills</a>
-                        </li>
-                        <li>
-                            <a href="#projects" className="hover:text-primary">Projects</a>
-                        </li>
-                        <li>
-                            <a href="#connect" className="hover:text-primary">Contact Me</a>
-                        </li>
-                    </ul>
+export default function Footer() {
+  const reduceMotion = useReducedMotion();
 
-                </motion.div>
+  const pointerX = useMotionValue(-500);
+  const pointerY = useMotionValue(-500);
 
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    viewport={{ once: true }}
-                    className="text-gray-600 dark:text-gray-400">
+  const smoothX = useSpring(pointerX, {
+    stiffness: 120,
+    damping: 25,
+  });
 
-                    <h3 className="text-gray-900 dark:text-white font-medium mb-4">Find me on GitHub and LinkedIn.</h3>
-                    <p className="text-sm mb-4">Check out my code or connect professionally.</p>
-                    <div className="flex items-center gap-4">
-                        <a href="https://github.com/arafatalhomedy" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:scale-110 transition-all duration-300">
-                            <img src={assets.github_icon} alt="GitHub" className="w-4.5 h-4.5 object-contain dark:invert" />
-                        </a>
-                        <a href="https://www.linkedin.com/in/arafat-ali-8686-ali/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:scale-110 transition-all duration-300">
-                            <img src={assets.linkedin_icon} alt="LinkedIn" className="w-4.5 h-4.5 object-contain" />
-                        </a>
+  const smoothY = useSpring(pointerY, {
+    stiffness: 120,
+    damping: 25,
+  });
 
-                        <a href="https://www.linkedin.com/in/arafat-ali-8686-ali/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:scale-110 transition-all duration-300">
-                            <img src={assets.facebook_icon} alt="Facebook" className="w-4.5 h-4.5 object-contain " />
-                        </a>
+  const spotlight = useMotionTemplate`
+    radial-gradient(
+      260px circle at ${smoothX}px ${smoothY}px,
+      rgba(112, 95, 255, 0.16),
+      transparent 75%
+    )
+  `;
 
-                        <a href="https://www.linkedin.com/in/arafat-ali-8686-ali/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:scale-110 transition-all duration-300">
-                            <img src={assets.instagram_icon} alt="Instagram " className="w-4.5 h-4.5 object-contain " />
-                        </a>
-                    </div>
+  const handlePointerMove = (event) => {
+    if (reduceMotion || event.pointerType !== "mouse") {
+      return;
+    }
 
+    const bounds = event.currentTarget.getBoundingClientRect();
 
+    pointerX.set(event.clientX - bounds.left);
+    pointerY.set(event.clientY - bounds.top);
+  };
 
+  return (
+    <footer
+      className="signature-footer"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={() => {
+        pointerX.set(-500);
+        pointerY.set(-500);
+      }}
+    >
+      <motion.div
+        className="signature-footer-glow"
+        style={{ backgroundImage: spotlight }}
+        aria-hidden="true"
+      />
 
+      <motion.div
+        className="signature-footer-line"
+        initial={reduceMotion ? false : { scaleX: 0, opacity: 0 }}
+        whileInView={{ scaleX: 1, opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{
+          duration: reduceMotion ? 0 : 1,
+          ease: "easeOut",
+        }}
+        aria-hidden="true"
+      />
 
-                </motion.div>
+      <div className="signature-footer-inner">
+        <div className="signature-footer-top">
+          <div className="signature-footer-identity">
+            <p className="signature-footer-role">
+              FULL-STACK DEVELOPER
+              <span aria-hidden="true"> / </span>
+              ASPIRING AI ENGINEER
+            </p>
 
-            </div>
+            <motion.a
+              href="#head"
+              className="signature-footer-name"
+              aria-label="Arafat Ali — back to top"
+              initial={reduceMotion ? false : "hidden"}
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={{
+                visible: {
+                  transition: {
+                    staggerChildren: reduceMotion ? 0 : 0.035,
+                  },
+                },
+              }}
+            >
+              {Array.from("Arafat Ali.").map((letter, index) => (
+                <motion.span
+                  key={index}
+                  className={
+                    letter === " "
+                      ? "signature-footer-space"
+                      : "signature-footer-letter"
+                  }
+                  aria-hidden="true"
+                  variants={{
+                    hidden: { opacity: 0, y: 24 },
+                    visible: { opacity: 1, y: 0 },
+                  }}
+                  transition={{
+                    duration: reduceMotion ? 0 : 0.5,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  whileHover={
+                    reduceMotion || letter === " "
+                      ? undefined
+                      : {
+                          y: -7,
+                          rotate: -3,
+                          transition: {
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 15,
+                          },
+                        }
+                  }
+                >
+                  {letter === " " ? "\u00A0" : letter}
+                </motion.span>
+              ))}
+            </motion.a>
+          </div>
 
-            <hr className="border-gray-300 dark:border-gray-600 my-6" />
+          <motion.a
+            href="#head"
+            className="signature-footer-top-button"
+            aria-label="Back to top"
+            whileHover={reduceMotion ? undefined : { y: -5, rotate: -6 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.94 }}
+          >
+            <span className="signature-footer-top-icon">
+              <ArrowIcon />
+            </span>
+          </motion.a>
+        </div>
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="text-center py-4 sm:py-7">
+        <div className="signature-footer-bottom">
+          <nav className="signature-footer-nav" aria-label="Footer navigation">
+            {navigation.map((item) => (
+              <a key={item.href} href={item.href}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                    &copy; {new Date().getFullYear()} Arafat Ali. All rights reserved.
-                </p>
+          <div className="signature-footer-socials">
+            {socials.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {social.label}
+                <ArrowIcon />
+              </a>
+            ))}
+          </div>
 
-            </motion.div>
-
-        </motion.div>
-    );
-};
-
-export default Footer;
+          <p className="signature-footer-copyright">
+            © {new Date().getFullYear()} Arafat Ali
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}

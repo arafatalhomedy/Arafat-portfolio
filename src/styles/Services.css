@@ -1,0 +1,181 @@
+@reference "../index.css";
+
+/* Section */
+.services-section {
+  @apply relative overflow-hidden
+    bg-[#10101a] px-6 py-24
+    font-sans text-[#f5f3ff]
+    sm:px-8 lg:py-32;
+}
+
+.services-container {
+  @apply relative mx-auto w-full max-w-[1100px];
+}
+
+/* Heading */
+.services-heading {
+  @apply mb-12 flex flex-col gap-6
+    lg:flex-row lg:items-end lg:justify-between lg:gap-12;
+}
+
+.services-eyebrow {
+  @apply m-0 mb-5 flex items-center gap-3
+    text-[10px] font-semibold tracking-[2.5px]
+    text-[#a6a2bd];
+}
+
+.services-eyebrow > span {
+  @apply h-0.5 w-[30px] shrink-0 bg-[#8175ff];
+}
+
+.services-title {
+  @apply m-0
+    text-[length:clamp(32px,4.5vw,52px)]
+    font-bold leading-[1.15] tracking-[-0.04em];
+}
+
+.services-title > span {
+  @apply text-[#a79dff];
+}
+
+.services-intro {
+  @apply m-0 max-w-[340px]
+    text-sm font-normal leading-7 text-[#aaa6be];
+}
+
+/* Card layout */
+.services-grid {
+  @apply grid grid-cols-1 gap-6 md:grid-cols-2;
+}
+
+/* Card */
+.service-card {
+  @apply relative isolate flex h-full flex-col
+    overflow-hidden rounded-[24px]
+    border border-[#b8b2ff]/10
+    bg-[#171622] p-7
+    transition-[border-color,box-shadow]
+    duration-300 sm:p-8;
+}
+
+/* Soft glow inside each card */
+.service-card::before {
+  content: "";
+
+  @apply pointer-events-none absolute inset-0 z-[-1]
+    bg-[radial-gradient(ellipse_at_top_right,rgba(80,68,229,0.2),transparent_70%)]
+    opacity-0 transition-opacity duration-500;
+}
+
+/* Highlight along the top edge */
+.service-card::after {
+  content: "";
+
+  @apply pointer-events-none absolute inset-x-8 top-0 h-px
+    bg-linear-to-r from-transparent via-[#a79dff] to-transparent
+    opacity-0 transition-opacity duration-300;
+}
+
+.service-card:hover {
+  @apply border-[#8b7fff]/40
+    shadow-[0_20px_50px_rgba(0,0,0,0.25)];
+}
+
+.service-card:hover::before,
+.service-card:hover::after {
+  @apply opacity-100;
+}
+
+/* Icon and number */
+.service-card-top {
+  @apply mb-8 flex items-center justify-between;
+}
+
+.service-card-icon {
+  @apply grid size-14 place-items-center
+    rounded-2xl border border-[#8b7fff]/20
+    bg-primary/10 text-[#b8b2ff]
+    transition duration-300;
+}
+
+.service-card:hover .service-card-icon {
+  @apply -rotate-6 scale-110
+    border-[#8b7fff]/40 bg-primary/20;
+}
+
+.service-card-number {
+  @apply text-sm font-medium tracking-widest
+    text-[#77718f];
+}
+
+/* Card text */
+.service-card-category {
+  @apply m-0 mb-3
+    text-[9px] font-semibold tracking-[2px]
+    text-[#a79dff];
+}
+
+.service-card-title {
+  @apply m-0 mb-4
+    text-[22px] font-semibold leading-snug
+    tracking-[-0.025em] text-[#f5f3ff];
+}
+
+.service-card-description {
+  @apply m-0 mb-8
+    text-sm font-normal leading-7 text-[#aaa6be];
+}
+
+/* Focus areas */
+.service-card-tags {
+  @apply m-0 mt-auto flex list-none flex-wrap gap-2
+    border-t border-white/5 pt-6 pl-0;
+}
+
+.service-card-tags li {
+  @apply rounded-full border border-[#b8b2ff]/10
+    bg-white/[0.025] px-3 py-1.5
+    text-[10px] font-medium text-[#c3bddb];
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .service-card,
+  .service-card::before,
+  .service-card::after,
+  .service-card-icon {
+    @apply transition-none;
+  }
+
+  .service-card:hover .service-card-icon {
+    @apply transform-none;
+  }
+}
+.services-section {
+  @apply px-[clamp(1rem,4vw,2rem)]
+    py-[clamp(3rem,6vw,5rem)];
+}
+
+.services-container,
+.services-heading,
+.service-card {
+  @apply min-w-0;
+}
+
+.services-grid {
+  @apply grid-cols-1 gap-5
+    md:grid-cols-2;
+}
+
+.service-card {
+  @apply p-5 sm:p-7;
+}
+
+.service-card-title,
+.service-card-description {
+  @apply [overflow-wrap:anywhere];
+}
+
+.services-title {
+  @apply text-[length:clamp(1.75rem,4.5vw,3.25rem)];
+}

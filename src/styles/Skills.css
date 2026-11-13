@@ -1,0 +1,409 @@
+@reference "../index.css";
+
+/* Section */
+.skills-section {
+  @apply overflow-hidden bg-[#10101a]
+    px-6 py-16 font-sans text-[#f5f3ff]
+    sm:px-8 lg:py-20;
+}
+
+.skills-container {
+  @apply mx-auto w-full max-w-[1100px];
+}
+
+/* Heading */
+.skills-heading {
+  @apply mb-7 flex flex-wrap items-end
+    justify-between gap-4;
+}
+
+.skills-eyebrow {
+  @apply m-0 mb-4 flex items-center gap-3
+    text-[10px] font-semibold tracking-[2.5px]
+    text-[#a6a2bd];
+}
+
+.skills-eyebrow > span {
+  @apply h-0.5 w-7 bg-[#8175ff];
+}
+
+.skills-title {
+  @apply m-0
+    text-[length:clamp(28px,3.6vw,42px)]
+    font-bold leading-tight tracking-[-0.04em];
+}
+
+.skills-title > span {
+  @apply bg-linear-to-r from-[#c5bfff] to-[#8175ff]
+    bg-clip-text text-transparent;
+}
+
+.skills-count {
+  @apply rounded-full border border-[#8b7fff]/20
+    bg-primary/10 px-3 py-1.5
+    text-[10px] font-medium text-[#b8b2ff];
+}
+
+/* Toolbar */
+.skills-toolbar {
+  @apply mb-4 flex flex-wrap items-center
+    justify-between gap-3;
+}
+
+.skills-filters {
+  @apply flex w-fit max-w-full flex-wrap
+    gap-1 rounded-full border border-white/5
+    bg-white/[0.025] p-1;
+}
+
+.skills-filter {
+  @apply relative isolate rounded-full
+    border-0 bg-transparent px-3.5 py-2
+    text-[11px] font-medium text-[#aaa6be]
+    cursor-pointer transition-colors duration-200;
+}
+
+.skills-filter-label {
+  @apply relative;
+}
+
+.skills-filter:hover,
+.skills-filter[aria-pressed="true"] {
+  @apply text-white;
+}
+
+.skills-filter-highlight {
+  @apply pointer-events-none absolute inset-0 z-[-1]
+    rounded-full
+    bg-linear-to-br from-[#7165f5] to-primary
+    shadow-[0_3px_14px_rgba(80,68,229,0.3)];
+}
+
+.skills-autoplay {
+  @apply inline-flex h-9 items-center gap-2
+    rounded-full border border-[#b8b2ff]/20
+    bg-white/[0.025] px-3
+    text-[10px] font-medium text-[#c5bfdf]
+    cursor-pointer transition-colors duration-200;
+}
+
+.skills-autoplay[aria-pressed="true"] {
+  @apply border-[#8b7fff]/35
+    bg-primary/15 text-[#d8d4ff];
+}
+
+.skills-autoplay:hover {
+  @apply border-[#a79dff]/60 bg-primary/25;
+}
+
+/* Carousel frame */
+.skills-stage {
+  @apply relative isolate rounded-[26px]
+    border border-[#b8b2ff]/10
+    bg-[radial-gradient(ellipse_at_50%_100%,rgba(80,68,229,0.14),transparent_75%)]
+    px-4 py-1 sm:px-5;
+}
+
+.skills-viewport {
+  @apply overflow-x-auto overflow-y-hidden
+    cursor-grab touch-auto select-none
+    [scrollbar-width:none];
+}
+
+.skills-viewport[data-dragging="true"] {
+  @apply cursor-grabbing;
+}
+
+.skills-viewport::-webkit-scrollbar {
+  @apply hidden;
+}
+
+/* Four cards with three 32px gaps */
+.skills-track {
+  @apply m-0 flex w-full min-w-0
+    list-none gap-8 px-0 py-6;
+}
+
+.skill-tile {
+  @apply relative isolate flex
+    h-[152px] min-w-0
+    flex-[0_0_calc((100%_-_96px)/4)]
+    flex-col items-center justify-center
+    overflow-visible rounded-[20px]
+    border border-[#b8b2ff]/15
+    bg-linear-to-br from-[#242035] to-[#171522]
+    px-3 py-5
+    shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
+    transition-[border-color,box-shadow] duration-300;
+}
+
+/* Card glow */
+.skill-tile::before {
+  @apply pointer-events-none absolute inset-0 z-[-1]
+    rounded-[20px]
+    bg-[radial-gradient(ellipse_at_top,rgba(112,95,255,0.3),transparent_75%)]
+    opacity-0 transition-opacity duration-300
+    content-[''];
+}
+
+.skill-tile:hover {
+  @apply border-[#a79dff]/60
+    shadow-[0_0_32px_rgba(112,95,255,0.16)];
+}
+
+.skill-tile:hover::before {
+  @apply opacity-100;
+}
+
+/* Technology icons */
+.skill-tile-icon {
+  @apply mb-4 grid size-12 place-items-center;
+}
+
+.skill-tile-icon img {
+  @apply pointer-events-none size-10 object-contain
+    drop-shadow-[0_4px_10px_rgba(0,0,0,0.25)];
+}
+
+.nextjs-symbol {
+  @apply grid size-10 place-items-center
+    rounded-full bg-white
+    text-2xl font-bold text-black;
+}
+
+.skill-tile h3 {
+  @apply m-0 text-base font-semibold
+    tracking-[-0.02em] text-[#f5f3ff];
+}
+
+.skill-tile p {
+  @apply m-0 mt-1.5
+    text-[10px] font-medium tracking-wide
+    text-[#aaa6be];
+}
+
+/* Animated connections between cards */
+.skill-connector {
+  @apply pointer-events-none absolute
+    top-1/2 left-full z-10
+    h-px w-8 -translate-y-1/2
+    bg-linear-to-r
+    from-[#8175ff]/15
+    via-[#a79dff]/50
+    to-[#8175ff]/15;
+}
+
+.skill-connector-light {
+  @apply absolute top-1/2
+    size-[5px] -translate-x-1/2 -translate-y-1/2
+    rounded-full bg-[#d5cfff]
+    shadow-[0_0_8px_#a79dff,0_0_18px_rgba(129,117,255,0.7)];
+}
+
+/* Progress and navigation */
+.skills-footer {
+  @apply mt-4 flex flex-wrap items-center gap-5;
+}
+
+.skills-hint {
+  @apply flex items-center gap-2
+    text-[10px] text-[#aaa6be];
+}
+
+.skills-hint > span {
+  @apply text-base text-[#a79dff];
+}
+
+.skills-progress {
+  @apply relative h-0.5 min-w-8 flex-1
+    overflow-hidden rounded-full bg-white/10;
+}
+
+.skills-progress-fill {
+  @apply absolute inset-0 origin-left rounded-full
+    bg-linear-to-r from-primary to-[#b8b2ff];
+}
+
+.skills-controls {
+  @apply ml-auto flex gap-2;
+}
+
+.skills-arrow {
+  @apply grid size-9 place-items-center
+    rounded-full border border-[#b8b2ff]/20
+    bg-white/[0.025] p-0 text-[#d8d4ff]
+    cursor-pointer transition-colors duration-200;
+}
+
+.skills-arrow:hover:not(:disabled) {
+  @apply border-[#8b7fff]/60 bg-primary/20;
+}
+
+.skills-arrow:disabled {
+  @apply cursor-default opacity-30;
+}
+
+.skills-arrow-left svg {
+  @apply rotate-180;
+}
+
+/* Keyboard focus */
+.skills-filter:focus-visible,
+.skills-autoplay:focus-visible,
+.skills-arrow:focus-visible {
+  @apply outline-2 outline-offset-4 outline-[#b8b2ff];
+}
+
+.skills-viewport:focus-visible {
+  @apply outline-2 outline-offset-[-2px] outline-[#b8b2ff];
+}
+
+/* Two cards with one 24px gap on phones */
+@media (max-width: 640px) {
+  .skills-track {
+    @apply gap-6;
+  }
+
+  .skill-tile {
+    @apply h-[140px]
+      flex-[0_0_calc((100%_-_24px)/2)];
+  }
+
+  .skill-connector {
+    @apply w-6;
+  }
+
+  .skill-tile h3 {
+    @apply text-sm;
+  }
+
+  .skills-filter {
+    @apply px-3 text-[10px];
+  }
+
+  .skills-footer {
+    @apply gap-3;
+  }
+
+  .skills-hint {
+    @apply text-[9px];
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skills-filter,
+  .skills-autoplay,
+  .skill-tile,
+  .skill-tile::before,
+  .skills-arrow {
+    @apply transition-none;
+  }
+}
+/* Transform-based sliding replaces native scrolling */
+.skills-viewport {
+  @apply overflow-hidden touch-pan-y;
+}
+
+.skills-track {
+  @apply cursor-grab
+    [will-change:transform];
+}
+
+.skills-track[data-dragging="true"] {
+  @apply cursor-grabbing;
+}
+
+/* Show one centered set when everything already fits */
+.skills-track[data-loop="false"] {
+  @apply justify-center cursor-default;
+}
+
+.skill-tile[data-clone-hidden="true"] {
+  @apply hidden;
+}
+
+.skill-tile img {
+  @apply pointer-events-none select-none;
+}
+.skills-section {
+  @apply px-[clamp(1rem,4vw,2rem)]
+    py-[clamp(3rem,6vw,5rem)];
+}
+
+.skills-container,
+.skills-heading,
+.skills-toolbar,
+.skills-stage,
+.skills-viewport {
+  @apply min-w-0;
+}
+
+.skills-title {
+  @apply text-[length:clamp(1.75rem,3.6vw,2.625rem)];
+}
+
+/* Four visible cards */
+.skills-track {
+  @apply gap-8;
+}
+
+.skill-tile {
+  @apply flex-[0_0_calc((100%_-_96px)/4)];
+}
+
+.skill-connector {
+  @apply w-8;
+}
+
+@media (max-width: 640px) {
+  .skills-toolbar {
+    @apply flex-wrap;
+  }
+
+  .skills-filters {
+    @apply flex w-full min-w-0
+      max-w-full flex-wrap rounded-2xl;
+  }
+
+  .skills-filter {
+    @apply min-h-11 flex-1 px-2 text-[11px];
+  }
+
+  /* Two visible cards */
+  .skills-track {
+    @apply gap-6;
+  }
+
+  .skill-tile {
+    @apply flex-[0_0_calc((100%_-_24px)/2)];
+  }
+
+  .skill-connector {
+    @apply w-6;
+  }
+
+  .skills-arrow,
+  .skills-autoplay {
+    @apply min-h-11;
+  }
+
+  .skills-arrow {
+    @apply size-11;
+  }
+
+  .skills-footer {
+    @apply flex-wrap;
+  }
+}
+
+@media (max-width: 359px) {
+  /* One card on very narrow screens */
+  .skill-tile {
+    @apply flex-[0_0_100%];
+  }
+
+  .skills-filters {
+    @apply grid grid-cols-2;
+  }
+}

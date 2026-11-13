@@ -1,0 +1,330 @@
+@reference "../index.css";
+
+/* Section */
+.work-section {
+  @apply overflow-hidden bg-[#10101a]
+    px-[clamp(1rem,4vw,2rem)]
+    py-[clamp(3rem,6vw,5rem)]
+    font-sans text-[#f5f3ff];
+}
+
+.work-container {
+  @apply mx-auto w-full min-w-0 max-w-[1100px];
+}
+
+/* Heading */
+.work-heading {
+  @apply mb-7 flex flex-wrap items-end
+    justify-between gap-x-6 gap-y-4;
+}
+
+.work-heading > div {
+  @apply min-w-0;
+}
+
+.work-eyebrow {
+  @apply m-0 mb-4 flex items-center gap-3
+    text-[10px] font-semibold tracking-[2.5px]
+    text-[#aaa3bf];
+}
+
+.work-eyebrow > span {
+  @apply h-0.5 w-7 shrink-0 bg-[#8175ff];
+}
+
+.work-heading h2 {
+  @apply m-0 max-w-[680px]
+    text-[length:clamp(1.75rem,3.6vw,2.625rem)]
+    font-bold leading-tight tracking-[-0.045em]
+    [overflow-wrap:anywhere];
+}
+
+.work-heading h2 > span {
+  @apply text-[#a79dff];
+}
+
+.work-github {
+  @apply inline-flex min-h-11 shrink-0
+    items-center gap-2
+    text-xs text-[#bcb5d0] no-underline
+    transition-colors duration-200;
+}
+
+.work-github:hover {
+  @apply text-white;
+}
+
+.work-github svg {
+  @apply size-4 shrink-0;
+}
+
+/* Project navigation */
+.work-navigation {
+  @apply mb-5 flex min-w-0 items-center
+    justify-between gap-3
+    border-b border-white/10;
+}
+
+.work-tabs {
+  @apply flex min-w-0 flex-1 gap-4
+    overflow-x-auto overscroll-x-contain
+    [scrollbar-width:none]
+    sm:gap-5;
+}
+
+.work-tabs::-webkit-scrollbar {
+  @apply hidden;
+}
+
+.work-tab {
+  @apply relative inline-flex min-h-12 shrink-0
+    items-center gap-2
+    border-0 bg-transparent px-0 py-4
+    text-[11px] font-medium whitespace-nowrap
+    text-[#8e879f] cursor-pointer
+    transition-colors duration-200
+    sm:gap-2.5 sm:text-xs;
+}
+
+.work-tab:hover,
+.work-tab[aria-pressed="true"] {
+  @apply text-white;
+}
+
+.work-tab-number {
+  @apply shrink-0 font-mono
+    text-[9px] text-[#8175ff];
+}
+
+.work-tab-line {
+  @apply pointer-events-none absolute
+    inset-x-0 bottom-0 h-0.5
+    bg-linear-to-r from-primary to-[#b8b2ff];
+}
+
+.work-arrows {
+  @apply flex shrink-0 gap-2 pb-2;
+}
+
+.work-arrows button {
+  @apply grid size-11 place-items-center
+    rounded-full border border-white/10
+    bg-transparent p-0
+    text-base text-[#d3cce5]
+    cursor-pointer transition-colors duration-200;
+}
+
+.work-arrows button:hover {
+  @apply border-[#8b7fff]/50 bg-primary/15 text-white;
+}
+
+/* Content determines the panel height */
+.work-stage {
+  @apply relative grid min-w-0
+    overflow-hidden rounded-[24px]
+    border border-[#b8b2ff]/15
+    bg-[#171521];
+}
+
+.work-project {
+  @apply relative col-start-1 row-start-1
+    grid min-w-0 grid-cols-1;
+}
+
+/* Screenshot area */
+.work-image-link {
+  @apply relative block min-w-0
+    h-[clamp(11rem,45vw,18rem)]
+    overflow-hidden bg-[#242131];
+}
+
+.work-image {
+  @apply absolute inset-0 block h-full w-full
+    object-cover object-top
+    transition-[object-position,transform]
+    duration-[2200ms] ease-in-out;
+}
+
+.work-image-link:focus-visible .work-image {
+  @apply scale-[1.02] object-bottom;
+}
+
+.work-image-label {
+  @apply absolute bottom-3 left-3
+    inline-flex min-h-9 items-center gap-3
+    rounded-full border border-white/20
+    bg-[#10101a]/80 px-3 py-2
+    text-[10px] font-medium text-white
+    backdrop-blur-xl
+    transition-colors duration-200
+    sm:bottom-4 sm:left-4;
+}
+
+.work-image-label svg {
+  @apply size-3.5 shrink-0;
+}
+
+/* Hover animations for mouse/trackpad users */
+@media (hover: hover) and (pointer: fine) {
+  .work-image-link:hover .work-image {
+    @apply scale-[1.02] object-bottom;
+  }
+
+  .work-image-link:hover .work-image-label {
+    @apply bg-primary;
+  }
+}
+
+/* Project information */
+.work-details {
+  @apply flex min-w-0 flex-col justify-center
+    bg-[radial-gradient(ellipse_at_top_right,rgba(80,68,229,0.13),transparent_75%)]
+    p-5 sm:p-6 lg:p-7;
+}
+
+.work-project-meta {
+  @apply mb-3 flex min-w-0
+    items-start justify-between gap-3
+    text-[9px] font-semibold tracking-[1.4px]
+    text-[#a79dff];
+}
+
+.work-project-meta > span:first-child {
+  @apply min-w-0 [overflow-wrap:anywhere];
+}
+
+.work-project-meta > span:last-child {
+  @apply shrink-0 font-mono
+    tracking-normal text-[#77718b];
+}
+
+.work-details h3 {
+  @apply m-0
+    text-[length:clamp(1.5rem,2.4vw,1.875rem)]
+    font-semibold leading-tight
+    tracking-[-0.04em] text-white
+    [overflow-wrap:anywhere];
+}
+
+.work-description {
+  @apply m-0 mt-3
+    text-xs font-normal leading-6
+    text-[#b5aec5]
+    [overflow-wrap:anywhere];
+}
+
+/* Technology badges */
+.work-tags {
+  @apply m-0 mt-4 flex min-w-0
+    list-none flex-wrap gap-2 p-0;
+}
+
+.work-tags li {
+  @apply max-w-full rounded-md
+    border border-white/10
+    bg-white/[0.025] px-2.5 py-1
+    text-[10px] font-medium text-[#c9c2dc]
+    [overflow-wrap:anywhere];
+}
+
+/* Project actions */
+.work-actions {
+  @apply mt-5 flex flex-wrap items-center
+    gap-x-4 gap-y-2;
+}
+
+.work-primary-link {
+  @apply inline-flex min-h-11 max-w-full
+    items-center justify-center gap-3
+    rounded-full
+    bg-linear-to-br from-[#796cf6] to-primary
+    px-4 py-2.5
+    text-xs font-semibold text-white no-underline
+    transition-[filter,box-shadow] duration-200;
+}
+
+.work-primary-link:hover {
+  @apply brightness-110
+    shadow-[0_5px_20px_rgba(80,68,229,0.3)];
+}
+
+.work-source-link {
+  @apply inline-flex min-h-11
+    items-center gap-2
+    text-xs font-medium text-[#bbb3cf]
+    no-underline transition-colors duration-200;
+}
+
+.work-source-link:hover {
+  @apply text-white;
+}
+
+.work-actions svg {
+  @apply size-3.5 shrink-0;
+}
+
+/* Desktop: screenshot and details side by side */
+@media (min-width: 768px) {
+  .work-project {
+    @apply min-h-[350px]
+      grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)];
+  }
+
+  .work-image-link {
+    @apply h-auto min-h-[350px];
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 359px) {
+  .work-navigation {
+    @apply flex-wrap;
+  }
+
+  .work-tabs {
+    @apply basis-full;
+  }
+
+  .work-arrows {
+    @apply ml-auto;
+  }
+
+  .work-actions {
+    @apply items-stretch;
+  }
+
+  .work-primary-link {
+    @apply w-full;
+  }
+}
+
+/* Keyboard focus */
+.work-tab:focus-visible,
+.work-arrows button:focus-visible,
+.work-github:focus-visible,
+.work-primary-link:focus-visible,
+.work-source-link:focus-visible {
+  @apply outline-2 outline-offset-4 outline-[#b8b2ff];
+}
+
+.work-image-link:focus-visible {
+  @apply outline-2 outline-offset-[-4px] outline-[#b8b2ff];
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .work-github,
+  .work-tab,
+  .work-arrows button,
+  .work-image,
+  .work-image-label,
+  .work-primary-link,
+  .work-source-link {
+    @apply transition-none;
+  }
+
+  .work-image-link:hover .work-image,
+  .work-image-link:focus-visible .work-image {
+    @apply transform-none object-top;
+  }
+}

@@ -1,0 +1,253 @@
+@reference "../index.css";
+
+/* Hero section */
+.portfolio-hero#head {
+  @apply relative isolate flex items-center
+    min-h-svh overflow-hidden
+    px-8 pt-[170px] pb-11
+    bg-[#10101a] text-[#f5f3ff];
+}
+
+.portfolio-hero,
+.portfolio-hero * {
+  @apply font-sans;
+}
+
+/* Background glow */
+.hero-glow {
+  @apply pointer-events-none absolute inset-0 z-[-1]
+    bg-[image:radial-gradient(ellipse_at_75%_30%,rgba(80,68,229,0.2),transparent_55%),radial-gradient(ellipse_at_15%_80%,rgba(80,68,229,0.08),transparent_45%)];
+}
+
+/* Content container */
+.hero-content {
+  @apply mx-auto w-full max-w-[1100px];
+}
+
+/* Eyebrow label */
+.hero-eyebrow {
+  @apply m-0 mb-6 flex items-center gap-3
+    text-[11px] font-semibold tracking-[3px]
+    text-[#a6a2bd];
+}
+
+.hero-eyebrow > span {
+  @apply h-0.5 w-[30px] bg-[#8175ff];
+}
+
+/* Name */
+.hero-name {
+  @apply m-0
+    text-[length:clamp(68px,11vw,154px)]
+    font-extrabold leading-[1.08] tracking-[-0.065em];
+}
+
+.hero-name > span {
+  @apply bg-[linear-gradient(120deg,#b8b2ff,#7165f5)]
+    bg-clip-text text-transparent;
+}
+
+/* Professional roles */
+.hero-role {
+  @apply mt-7 flex flex-wrap items-center gap-4
+    text-[length:clamp(16px,2.2vw,24px)]
+    text-[#d8d4eb];
+}
+
+.hero-role > span {
+  @apply font-medium;
+}
+
+.hero-role-divider {
+  @apply size-[5px] rounded-full bg-[#8175ff];
+}
+
+/* Description */
+.hero-description {
+  @apply m-0 mt-6 max-w-[540px]
+    text-base font-normal leading-[1.85]
+    text-[#aaa6be];
+}
+
+/* Action buttons */
+.hero-buttons {
+  @apply mt-[34px] flex flex-wrap gap-3.5;
+}
+
+.hero-primary-button,
+.hero-secondary-button {
+  @apply inline-flex min-h-[52px]
+    items-center justify-center gap-[18px]
+    rounded-full border border-transparent
+    px-6 py-0
+    text-[13px] font-semibold no-underline
+    transition-[background-color,border-color,box-shadow]
+    duration-[180ms];
+}
+
+.hero-primary-button {
+  @apply bg-primary text-white
+    shadow-[0_6px_24px_rgba(80,68,229,0.2)];
+}
+
+.hero-primary-button:hover {
+  @apply bg-[#6659f0]
+    shadow-[0_8px_30px_rgba(80,68,229,0.35)];
+}
+
+.hero-secondary-button {
+  @apply border-[#b8b2ff]/20
+    bg-white/[0.025] text-[#e1ddef];
+}
+
+.hero-secondary-button:hover {
+  @apply border-[#9187ff] bg-primary/10;
+}
+
+/* Bottom row */
+.hero-bottom {
+  @apply mt-[90px] flex items-center justify-between gap-6
+    border-t border-[#b8b2ff]/[0.12] pt-6;
+}
+
+/* Social links */
+.hero-socials {
+  @apply flex gap-7;
+}
+
+.hero-socials a,
+.hero-scroll-link {
+  @apply inline-flex items-center gap-2
+    text-xs text-[#aaa6be] no-underline
+    transition-colors duration-[180ms];
+}
+
+.hero-socials svg {
+  @apply size-3.5;
+}
+
+.hero-scroll-link > span {
+  @apply text-xl text-[#9187ff];
+}
+
+.hero-socials a:hover,
+.hero-scroll-link:hover {
+  @apply text-[#d8d4ff];
+}
+
+/* Keyboard focus */
+.portfolio-hero a:focus-visible {
+  @apply outline-2 outline-offset-[5px] outline-[#b8b2ff];
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .portfolio-hero#head {
+    @apply px-6 pt-[145px] pb-8;
+  }
+
+  .hero-name {
+    @apply text-[length:clamp(60px,14vw,88px)];
+  }
+
+  .hero-eyebrow {
+    @apply text-[9px] tracking-[2px];
+  }
+
+  .hero-role {
+    @apply mt-[22px] flex-col items-start gap-2;
+  }
+
+  .hero-role-divider {
+    @apply hidden;
+  }
+
+  .hero-description {
+    @apply text-sm;
+  }
+
+  .hero-buttons {
+    @apply gap-3;
+  }
+
+  .hero-primary-button,
+  .hero-secondary-button {
+    @apply gap-3 px-5;
+  }
+
+  .hero-bottom {
+    @apply mt-16 flex-wrap;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-hero a {
+    @apply transition-none;
+  }
+}
+.portfolio-hero#head {
+  @apply min-h-svh
+    px-[clamp(1rem,4vw,2rem)]
+    pt-[150px] pb-[clamp(2rem,5vw,4rem)];
+}
+
+.hero-content {
+  @apply w-full min-w-0 max-w-[1100px];
+}
+
+.hero-name {
+  @apply max-w-full
+    text-[length:clamp(3rem,11vw,9.5rem)]
+    leading-[1.08];
+}
+
+.hero-role,
+.hero-buttons,
+.hero-bottom {
+  @apply flex-wrap;
+}
+
+.hero-description {
+  @apply w-full max-w-[540px]
+    [overflow-wrap:anywhere];
+}
+
+.hero-primary-button,
+.hero-secondary-button {
+  @apply min-h-11;
+}
+
+@media (max-width: 640px) {
+  .portfolio-hero#head {
+    @apply pt-[185px];
+  }
+
+  .hero-name {
+    @apply text-[length:clamp(2.75rem,13vw,5.5rem)];
+  }
+
+  .hero-description {
+    @apply text-sm leading-7;
+  }
+
+  .hero-bottom {
+    @apply mt-12 gap-5;
+  }
+}
+
+@media (max-width: 359px) {
+  .hero-buttons {
+    @apply w-full flex-col;
+  }
+
+  .hero-primary-button,
+  .hero-secondary-button {
+    @apply w-full;
+  }
+}
+@media (max-width: 767px) {
+  .portfolio-hero#head {
+    @apply pt-[132px];
+  }
+}
