@@ -44,7 +44,7 @@ export async function apiRequest(
     if (error.name === "AbortError") throw error;
 
     throw new Error(
-      "Cannot connect to the backend. Make sure the server is running on port 3001.",
+      "Cannot connect to the portfolio service. Check your connection and try again.",
     );
   }
 

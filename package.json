@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "predeploy": "npm run export-content && npm run build",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "export-content": "node server/scripts/export-public-content.js"
   },
