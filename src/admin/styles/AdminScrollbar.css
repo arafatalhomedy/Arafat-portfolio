@@ -1,0 +1,116 @@
+/* Standard fallback */
+:is(
+  .project-editor-body,
+  .content-editor-body,
+  .dashboard-sidebar-body,
+  .project-editor-field textarea,
+  .content-editor-field textarea
+) {
+  scrollbar-width: thin;
+  scrollbar-color: #8172cd transparent;
+}
+
+/* Chrome, Edge, and Safari */
+@supports selector(::-webkit-scrollbar) {
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  ) {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #a292ed, #7060bc) padding-box;
+  }
+
+  :is(
+      .project-editor-body,
+      .content-editor-body,
+      .dashboard-sidebar-body,
+      .project-editor-field textarea,
+      .content-editor-field textarea
+    )::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #c0b2ff, #9380e8) padding-box;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Respect system high-contrast colors */
+@media (forced-colors: active) {
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  ) {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+
+  :is(
+    .project-editor-body,
+    .content-editor-body,
+    .dashboard-sidebar-body,
+    .project-editor-field textarea,
+    .content-editor-field textarea
+  )::-webkit-scrollbar-thumb {
+    border-color: Canvas;
+    background: CanvasText;
+  }
+}

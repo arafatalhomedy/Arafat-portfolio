@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-
+import ProfilePhoto from "./ProfilePhoto";
 import "../styles/Navbar.css";
 
 const links = [
@@ -99,14 +99,7 @@ export default function Navbars({ theme, setTheme }) {
 
   return (
     <header ref={headerRef} className="portfolio-navbar">
-      <a
-        href="#head"
-        className="portfolio-brand"
-        aria-label="Arafat Ali — Home"
-        onClick={() => setMenuOpen(false)}
-      >
-        AA
-      </a>
+      <ProfilePhoto />
 
       <nav className="portfolio-nav-links" aria-label="Main navigation">
         <NavigationLinks />

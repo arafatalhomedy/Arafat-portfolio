@@ -1,30 +1,28 @@
 import { motion, useReducedMotion } from "motion/react";
 import ServiceCard from "./ServiceCard";
 import "../styles/Services.css";
-
-const services = [
-  {
-    id: "01",
-    icon: "web",
-    category: "DEVELOPMENT",
-    title: "Full-Stack Web Development",
-    description:
-      "Building responsive interfaces and connecting them with backend logic to create complete, practical web applications.",
-    tags: ["React", "Node.js", "REST APIs"],
-  },
-  {
-    id: "02",
-    icon: "ai",
-    category: "INTEGRATION",
-    title: "AI-Powered Applications",
-    description:
-      "Exploring how existing AI models and APIs can bring useful features to web applications, from analyzing content to creating smarter user experiences.",
-    tags: ["AI Integration", "Python", "Web Apps"],
-  },
-];
+import {
+  PortfolioContentStatus,
+  usePortfolioContent,
+} from "./PortfolioContent";
 
 export default function Services() {
+  const { services, loading, error, reload } = usePortfolioContent();
+
   const reduceMotion = useReducedMotion();
+
+  if (services.length === 0) {
+    return (
+      <PortfolioContentStatus
+        id="services"
+        title="What I build."
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        emptyMessage="Services will be available soon."
+      />
+    );
+  }
 
   return (
     <section id="services" className="services-section">

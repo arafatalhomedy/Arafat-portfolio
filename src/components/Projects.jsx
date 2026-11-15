@@ -1,58 +1,12 @@
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
-import assets from "../assets";
-import carhubPreview from "../assets/carhub.jpg";
-import attoorPreview from "../assets/attoor.jpg";
+import {
+  PortfolioContentStatus,
+  usePortfolioContent,
+} from "./PortfolioContent";
 
 import "../styles/Projects.css";
-
-const projects = [
-  {
-    id: "01",
-    title: "Carhub",
-    category: "CAR RENTAL PLATFORM",
-    description:
-      "A responsive car rental platform for browsing vehicles, comparing rental plans, choosing pickup and return details, and managing bookings and favorites.",
-    image: carhubPreview,
-    tags: [],
-    github: "https://github.com/arafatalhomedy/CarWeb",
-    live: "https://car-web-sandy.vercel.app/",
-  },
-  {
-    id: "02",
-    title: "Attoor",
-    category: "CONSTRUCTION & ENGINEERING WEBSITE",
-    description:
-      "A company website for Attoor.CEGS that presents its construction and engineering services, showcases projects, and helps prospective clients contact the team.",
-    image: attoorPreview,
-    tags: [],
-    github: "https://github.com/arafatalhomedy/attoor-website",
-    live: "https://arafatalhomedy.github.io/attoor-website/#/",
-  },
-  {
-    id: "03",
-    title: "ATS CV Checker",
-    category: "WEB APPLICATION",
-    description:
-      "Compare resumes with job descriptions, uncover missing keywords, and understand how well a CV matches a role.",
-    image: assets.cv_checker,
-    tags: ["React", "Python", "Flask"],
-    github: "https://github.com/arafatalhomedy/ATC-CV-Checker",
-    live: "https://arafatalhomedy.github.io/ATC-CV-Checker/",
-  },
-  {
-    id: "04",
-    title: "Letter Safari",
-    category: "EDUCATIONAL GAME",
-    description:
-      "A jungle adventure that teaches children letters and phonics through matching games, animal rescues, and spoken sounds.",
-    image: assets.leter_safari,
-    tags: ["Python", "Pygame", "NumPy"],
-    github: "https://github.com/arafatalhomedy/letter_safari_project",
-    live: null,
-  },
-];
 
 function ArrowIcon() {
   return (
@@ -73,10 +27,15 @@ function ArrowIcon() {
 }
 
 export default function Projects() {
-  const [selected, setSelected] = useState(0);
+  const { projects, loading, error, reload } = usePortfolioContent();
+
+  const [selectedIndex, setSelected] = useState(0);
   const [direction, setDirection] = useState(1);
 
   const reduceMotion = useReducedMotion();
+
+  const selected = Math.min(selectedIndex, Math.max(0, projects.length - 1));
+
   const project = projects[selected];
 
   const chooseProject = (index, movement) => {
@@ -106,7 +65,18 @@ export default function Projects() {
       x: reduceMotion ? 0 : movement * -24,
     }),
   };
-
+  if (!project) {
+    return (
+      <PortfolioContentStatus
+        id="projects"
+        title="Selected work."
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        emptyMessage="New projects are coming soon."
+      />
+    );
+  }
   return (
     <section id="projects" className="work-section">
       <div className="work-container">
@@ -153,7 +123,7 @@ export default function Projects() {
                   });
                 }}
               >
-                <span className="work-tab-number">{item.id}</span>
+                <span className="work-tab-number">{item.display_number}</span>
 
                 {item.title}
 
@@ -235,7 +205,8 @@ export default function Projects() {
                   <span>{project.category}</span>
 
                   <span aria-hidden="true">
-                    {project.id} / {String(projects.length).padStart(2, "0")}
+                    {project.display_number} /{" "}
+                    {String(projects.length).padStart(2, "0")}
                   </span>
                 </div>
 

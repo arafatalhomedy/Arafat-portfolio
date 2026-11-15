@@ -64,7 +64,7 @@ export default function ServiceCard({ service, index }) {
         </div>
 
         <span className="service-card-number" aria-hidden="true">
-          {service.id}
+          {service.display_number}
         </span>
       </div>
 

@@ -8,39 +8,13 @@ import {
   useReducedMotion,
 } from "motion/react";
 
-import { skillData } from "../assets";
+import {
+  PortfolioContentStatus,
+  usePortfolioContent,
+} from "./PortfolioContent";
 import "../styles/Skills.css";
 
 const filters = ["All", "Frontend", "Backend", "Languages"];
-
-const categoryMap = {
-  React: "Frontend",
-  HTML: "Frontend",
-  CSS: "Frontend",
-  "Node.js": "Backend",
-  JavaScript: "Languages",
-  Python: "Languages",
-  C: "Languages",
-  "C++": "Languages",
-};
-
-const skills = [
-  {
-    title: "Next.js",
-    icon: null,
-    label: "Full-stack",
-    categories: ["Frontend", "Backend"],
-  },
-  ...skillData.map((skill) => {
-    const category = categoryMap[skill.title] || "Languages";
-
-    return {
-      ...skill,
-      label: category,
-      categories: [category],
-    };
-  }),
-];
 
 // Reposition onto an identical copy without a visible reset.
 function wrapPosition(position, cycle) {
@@ -70,6 +44,25 @@ function ArrowIcon() {
 }
 
 export default function Skills() {
+  const { skills, loading, error, reload } = usePortfolioContent();
+
+  if (skills.length === 0) {
+    return (
+      <PortfolioContentStatus
+        id="skills"
+        title="My development stack."
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        emptyMessage="My toolkit is being updated."
+      />
+    );
+  }
+
+  return <SkillsCarousel skills={skills} />;
+}
+
+function SkillsCarousel({ skills }) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [autoPlay, setAutoPlay] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -108,7 +101,22 @@ export default function Skills() {
     const track = trackRef.current;
     const card = firstCardRef.current;
 
-    if (!viewport || !track || !card) return;
+    if (!viewport || !track || !card) {
+      animationRef.current?.stop();
+
+      movingRef.current = false;
+      draggingRef.current = false;
+
+      setDragging(false);
+      setGeometry({
+        step: 0,
+        cycle: 0,
+        loop: false,
+      });
+
+      x.set(0);
+      return;
+    }
 
     const measure = () => {
       animationRef.current?.stop();
@@ -286,6 +294,11 @@ export default function Skills() {
               }
             }}
           >
+            {visibleSkills.length === 0 && (
+              <p className="portfolio-content-inline" role="status">
+                No skills in this category yet.
+              </p>
+            )}
             <motion.ul
               ref={trackRef}
               className="skills-track"
@@ -305,7 +318,7 @@ export default function Skills() {
               {[0, 1, 2].flatMap((copy) =>
                 visibleSkills.map((skill, index) => (
                   <motion.li
-                    key={`${copy}-${skill.title}`}
+                    key={`${copy}-${skill.id}`}
                     ref={copy === 1 && index === 0 ? firstCardRef : undefined}
                     className="skill-tile"
                     data-clone-hidden={!geometry.loop && copy !== 1}
@@ -327,13 +340,15 @@ export default function Skills() {
                         <img src={skill.icon} alt="" draggable={false} />
                       ) : (
                         <span className="nextjs-symbol" aria-hidden="true">
-                          N
+                          {skill.title === "Next.js"
+                            ? "N"
+                            : skill.title.slice(0, 2).toUpperCase()}
                         </span>
                       )}
                     </motion.span>
 
                     <h3>{skill.title}</h3>
-                    <p>{skill.label}</p>
+                    <p>{skill.label || skill.categories.join(" / ")}</p>
 
                     {(geometry.loop || index < visibleSkills.length - 1) && (
                       <span className="skill-connector" aria-hidden="true">

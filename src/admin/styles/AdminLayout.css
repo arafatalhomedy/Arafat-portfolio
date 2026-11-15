@@ -1,0 +1,131 @@
+/* Dashboard frame */
+.admin-page.dashboard-layout {
+  display: block;
+  min-height: 100dvh;
+  padding: 0;
+  background: #0e0f18;
+  color: #f1f0f7;
+}
+
+.dashboard-layout,
+.dashboard-layout * {
+  box-sizing: border-box;
+}
+
+/* Desktop sidebar */
+.dashboard-desktop-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  width: 248px;
+}
+
+/* Main workspace */
+.dashboard-workspace {
+  min-width: 0;
+  min-height: 100dvh;
+  margin-left: 248px;
+}
+
+.dashboard-content {
+  width: 100%;
+  max-width: 1440px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(24px, 3vw, 40px);
+}
+
+.dashboard-content:focus {
+  outline: none;
+}
+
+/* Mobile navigation dialog */
+.dashboard-mobile-menu {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: min(296px, calc(100vw - 32px));
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: #11121c;
+  color: #f1f0f7;
+}
+
+.dashboard-mobile-menu[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-mobile-menu::backdrop {
+  background: rgba(4, 6, 14, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.dashboard-mobile-menu-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 10px 16px;
+}
+
+.dashboard-mobile-menu-header > span {
+  color: #9295ab;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-menu-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 11px;
+  padding: 0;
+  background: transparent;
+  color: #aaaabd;
+  cursor: pointer;
+}
+
+.dashboard-menu-close:hover {
+  background: rgba(129, 117, 255, 0.1);
+  color: #d8d1ff;
+}
+
+.dashboard-menu-close:focus-visible {
+  outline: 2px solid #a79dff;
+  outline-offset: 3px;
+}
+
+.dashboard-mobile-menu .dashboard-sidebar {
+  flex: 1;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  border-right: 0;
+}
+
+/* Tablet and mobile */
+@media (max-width: 1023px) {
+  .dashboard-desktop-sidebar {
+    display: none;
+  }
+
+  .dashboard-workspace {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-content {
+    padding: 24px 16px;
+  }
+}
