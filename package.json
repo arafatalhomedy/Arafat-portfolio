@@ -8,8 +8,9 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "predeploy": "npm run export-content && npm run build",
+    "deploy": "gh-pages -d dist",
+    "export-content": "node server/scripts/export-public-content.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

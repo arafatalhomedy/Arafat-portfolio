@@ -1,0 +1,164 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "title": "Carhub",
+      "category": "CAR RENTAL PLATFORM",
+      "description": "A responsive car rental platform for browsing vehicles, comparing rental plans, choosing pickup and return details, and managing bookings and favorites.",
+      "image": "/Arafat-portfolio/project-images/carhub.jpg",
+      "tags": [
+        "Next.js",
+        "React",
+        "TypeScript",
+        "Supabase",
+        "Tailwind CSS",
+        "Motion"
+      ],
+      "github": "https://github.com/arafatalhomedy/CarWeb",
+      "live": "https://car-web-sandy.vercel.app/"
+    },
+    {
+      "id": 2,
+      "title": "Alttoor",
+      "category": "CONSTRUCTION & ENGINEERING WEBSITE",
+      "description": "A company website for Attoor.CEGS that presents its construction and engineering services, showcases projects, and helps prospective clients contact the team.",
+      "image": "/Arafat-portfolio/project-images/attoor.jpg",
+      "tags": [
+        "React",
+        "Vite",
+        "Python",
+        "FastAPI",
+        "Supabase",
+        "Tailwind CSS",
+        "Motion"
+      ],
+      "github": "https://github.com/arafatalhomedy/attoor-website",
+      "live": "https://arafatalhomedy.github.io/attoor-website/#/"
+    },
+    {
+      "id": 3,
+      "title": "Letter Safari",
+      "category": "EDUCATIONAL GAME",
+      "description": "An educational jungle adventure developed as part of my bachelor's degree in Computer Science. The game teaches children letters and phonics through matching games, animal rescues, and spoken sounds. Built with Python, Pygame, and NumPy.",
+      "image": "/Arafat-portfolio/project-images/Letter_safari.png",
+      "tags": [
+        "Python",
+        "Pygame",
+        "NumPy"
+      ],
+      "github": "https://github.com/arafatalhomedy/letter_safari_project",
+      "live": null
+    }
+  ],
+  "skills": [
+    {
+      "id": 3,
+      "title": "JavaScript",
+      "icon": "/Arafat-portfolio/skill-icons/javascript_icon.svg",
+      "label": "Languages",
+      "categories": [
+        "Languages"
+      ]
+    },
+    {
+      "id": 1,
+      "title": "Next.js",
+      "icon": "",
+      "label": "Full-stack",
+      "categories": [
+        "Frontend",
+        "Backend"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Python",
+      "icon": "/Arafat-portfolio/skill-icons/python_icon.svg",
+      "label": "Languages",
+      "categories": [
+        "Languages"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "React",
+      "icon": "/Arafat-portfolio/skill-icons/javascript_icon.svg",
+      "label": "Frontend",
+      "categories": [
+        "Frontend"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Node.js",
+      "icon": "/Arafat-portfolio/skill-icons/nodejs_icon.svg",
+      "label": "Backend",
+      "categories": [
+        "Backend"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "C",
+      "icon": "/Arafat-portfolio/skill-icons/C_icon.svg",
+      "label": "Languages",
+      "categories": [
+        "Languages"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "C++",
+      "icon": "/Arafat-portfolio/skill-icons/cpp_icon.svg",
+      "label": "Languages",
+      "categories": [
+        "Languages"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "HTML",
+      "icon": "/Arafat-portfolio/skill-icons/html_icon.svg",
+      "label": "Frontend",
+      "categories": [
+        "Frontend"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "CSS",
+      "icon": "/Arafat-portfolio/skill-icons/css_icon.svg",
+      "label": "Frontend",
+      "categories": [
+        "Frontend"
+      ]
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "title": "Full-Stack Web Development",
+      "category": "DEVELOPMENT",
+      "description": "Building responsive interfaces and connecting them with backend logic to create complete, practical web applications.",
+      "icon": "web",
+      "tags": [
+        "React",
+        "Node.js",
+        "REST APIs"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "AI-Powered Applications",
+      "category": "INTEGRATION",
+      "description": "Exploring how existing AI models and APIs can bring useful features to web applications, from analyzing content to creating smarter user experiences.",
+      "icon": "ai",
+      "tags": [
+        "AI Integration",
+        "Python",
+        "Web Apps"
+      ]
+    }
+  ],
+  "avatar": "/Arafat-portfolio/published-images/avatar-ca1e261afb12d302.webp"
+}

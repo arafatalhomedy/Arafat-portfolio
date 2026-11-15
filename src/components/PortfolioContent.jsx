@@ -21,6 +21,7 @@ const emptyContent = {
   projects: [],
   skills: [],
   services: [],
+  avatar: "",
 };
 
 function addDisplayNumbers(items) {
@@ -29,7 +30,20 @@ function addDisplayNumbers(items) {
     display_number: String(index + 1).padStart(2, "0"),
   }));
 }
+function resolveImage(value) {
+  if (!value) return "";
 
+  try {
+    const url = new URL(
+      value,
+      window.location.origin + import.meta.env.BASE_URL,
+    );
+
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
 export function notifyPortfolioUpdated() {
   window.dispatchEvent(new Event(updateEvent));
 
@@ -70,11 +84,11 @@ export default function PortfolioContentProvider({ children }) {
 
     async function loadContent() {
       try {
-        if (!apiUrl) {
-          throw new Error("VITE_API_URL is not configured.");
-        }
+        const contentUrl = apiUrl
+          ? apiUrl + "/api/content"
+          : import.meta.env.BASE_URL + "portfolio-content.json";
 
-        const response = await fetch(`${apiUrl}/api/content`, {
+        const response = await fetch(contentUrl, {
           signal: controller.signal,
           cache: "no-store",
           headers: {
@@ -101,9 +115,20 @@ export default function PortfolioContentProvider({ children }) {
         if (controller.signal.aborted) return;
 
         setContent({
-          projects: addDisplayNumbers(data.projects),
-          skills: data.skills,
+          projects: addDisplayNumbers(
+            data.projects.map((item) => ({
+              ...item,
+              image: resolveImage(item.image),
+            })),
+          ),
+
+          skills: data.skills.map((item) => ({
+            ...item,
+            icon: resolveImage(item.icon),
+          })),
+
           services: addDisplayNumbers(data.services),
+          avatar: resolveImage(data.avatar),
         });
       } catch (requestError) {
         if (controller.signal.aborted) return;
@@ -161,7 +186,7 @@ export default function PortfolioContentProvider({ children }) {
 
         avatarUrl: apiUrl
           ? `${apiUrl}/api/profile/public-avatar?v=${revision}`
-          : "",
+          : content.avatar,
       }}
     >
       {children}
