@@ -177,8 +177,8 @@ export default function Profile({ onPasswordChanged }) {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      report("error", "Choose an image smaller than 5 MB.");
+    if (file.size > 4 * 1024 * 1024) {
+      report("error", "Choose an image that is 4 MB or smaller.");
       return;
     }
 
@@ -401,7 +401,7 @@ export default function Profile({ onPasswordChanged }) {
           <p className="profile-hint">
             {avatarLoading
               ? "Loading your photo…"
-              : "JPG, PNG or WebP. Up to 5 MB."}
+              : "JPG, PNG or WebP. Up to 4 MB."}
           </p>
 
           {avatarError && (

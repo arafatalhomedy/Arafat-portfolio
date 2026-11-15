@@ -1,63 +1,18 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
+import { put, del } from "@vercel/blob";
+import { randomUUID } from "node:crypto";
 import multer from "multer";
 import sharp from "sharp";
-
-import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { unlink, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
 
 import db from "../config/database.js";
 import { requireAdmin } from "./auth.routes.js";
 import { hashPassword, verifyPassword } from "../utils/passwords.js";
 
 const router = Router();
-/* Public photo used by the portfolio navbar */
-router.get("/public-avatar", (req, res, next) => {
-  res.set("Cache-Control", "no-store");
-  res.set("X-Content-Type-Options", "nosniff");
 
-  // This portfolio has one owner account.
-  const owner = db
-    .prepare(
-      `
-    SELECT avatar_file
-    FROM admins
-    ORDER BY id ASC
-    LIMIT 1
-  `,
-    )
-    .get();
-
-  if (!owner?.avatar_file) {
-    return res.status(404).end();
-  }
-
-  res.sendFile(
-    avatarPath(owner.avatar_file),
-    {
-      cacheControl: false,
-      lastModified: false,
-    },
-    (error) => {
-      if (!error) return;
-
-      if (error.code === "ENOENT" && !res.headersSent) {
-        return res.status(404).end();
-      }
-
-      next(error);
-    },
-  );
-});
-router.use(requireAdmin);
-
-router.use((req, res, next) => {
-  res.set("Cache-Control", "no-store");
-  next();
-});
+// This is the public hostname from your completed image migration.
+const blobOrigin = "https://9sh62rxuqjnzelvg.public.blob.vercel-storage.com";
 
 class ProfileError extends Error {
   constructor(message, status = 400) {
@@ -66,107 +21,10 @@ class ProfileError extends Error {
   }
 }
 
-/* Private avatar storage */
-const avatarDirectory = fileURLToPath(
-  new URL("../../uploads/avatars/", import.meta.url),
-);
-
-mkdirSync(avatarDirectory, { recursive: true });
-
-function avatarPath(filename) {
-  if (!/^[a-f0-9-]{36}\.webp$/i.test(filename)) {
-    throw new Error("Invalid stored avatar filename.");
-  }
-
-  return path.join(avatarDirectory, filename);
-}
-
-async function removeAvatarFile(filename) {
-  if (!filename) return;
-
-  try {
-    await unlink(avatarPath(filename));
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      console.error("Avatar cleanup failed:", error);
-    }
-  }
-}
-
-/* Database queries */
-const findProfile = db.prepare(`
-  SELECT
-    id,
-    username,
-    display_name,
-    bio,
-    avatar_file,
-    created_at
-  FROM admins
-  WHERE id = ?
-`);
-
-const countSessions = db.prepare(`
-  SELECT COUNT(*) AS total
-  FROM sessions
-  WHERE admin_id = ?
-    AND expires_at > ?
-`);
-
-const updateProfile = db.prepare(`
-  UPDATE admins
-  SET display_name = ?, bio = ?
-  WHERE id = ?
-`);
-
-const updateAvatar = db.prepare(`
-  UPDATE admins
-  SET avatar_file = ?
-  WHERE id = ?
-`);
-
-const findPassword = db.prepare(`
-  SELECT password_hash
-  FROM admins
-  WHERE id = ?
-`);
-
-const updatePassword = db.prepare(`
-  UPDATE admins
-  SET password_hash = ?
-  WHERE id = ?
-    AND password_hash = ?
-`);
-
-const removeAllSessions = db.prepare(`
-  DELETE FROM sessions
-  WHERE admin_id = ?
-`);
-
-const removeOtherSessions = db.prepare(`
-  DELETE FROM sessions
-  WHERE admin_id = ?
-    AND token_hash <> ?
-    AND expires_at > ?
-`);
-
-function getProfile(adminId) {
-  const admin = findProfile.get(adminId);
-
-  if (!admin) {
-    throw new ProfileError("Account not found.", 404);
-  }
-
-  return {
-    id: admin.id,
-    username: admin.username,
-    display_name: admin.display_name,
-    bio: admin.bio,
-    has_avatar: Boolean(admin.avatar_file),
-    created_at: admin.created_at,
-    active_sessions: countSessions.get(adminId, Date.now()).total,
-  };
-}
+router.use((req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 
 function requireBody(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
@@ -176,7 +34,162 @@ function requireBody(body) {
   return body;
 }
 
-/* Rate limits */
+function blobToken() {
+  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+
+  if (!token) {
+    throw new Error("Blob storage is not configured.");
+  }
+
+  return token;
+}
+
+function avatarUrl(value) {
+  const url = new URL(value);
+
+  if (
+    url.origin !== blobOrigin ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    !/^\/(?:avatars|migration)\/[a-z0-9-]+\.webp$/i.test(url.pathname)
+  ) {
+    throw new Error("Invalid stored profile photo URL.");
+  }
+
+  return url.href;
+}
+
+async function removeAvatar(value) {
+  if (!value) return;
+
+  try {
+    await del(avatarUrl(value), {
+      token: blobToken(),
+    });
+  } catch (error) {
+    // A cleanup failure must not undo a saved profile update.
+    console.error("Old photo cleanup failed:", error.name);
+  }
+}
+
+async function sendAvatar(res, value) {
+  const response = await fetch(avatarUrl(value), {
+    redirect: "error",
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (response.status === 404) {
+    throw new ProfileError("Profile photo not found.", 404);
+  }
+
+  if (
+    !response.ok ||
+    !response.headers.get("content-type")?.startsWith("image/webp")
+  ) {
+    throw new Error("Profile photo could not be loaded.");
+  }
+
+  const image = Buffer.from(await response.arrayBuffer());
+
+  res.set("X-Content-Type-Options", "nosniff");
+  res.type("image/webp").send(image);
+}
+
+async function getProfile(adminId) {
+  const result = await db.execute({
+    sql: `
+      SELECT
+        admins.id,
+        admins.username,
+        admins.display_name,
+        admins.bio,
+        admins.avatar_file,
+        admins.created_at,
+        (
+          SELECT COUNT(*)
+          FROM sessions
+          WHERE sessions.admin_id = admins.id
+            AND sessions.expires_at > ?
+        ) AS active_sessions
+      FROM admins
+      WHERE admins.id = ?
+    `,
+    args: [Date.now(), adminId],
+  });
+
+  const admin = result.rows[0];
+
+  if (!admin) {
+    throw new ProfileError("Account not found.", 404);
+  }
+
+  return {
+    id: Number(admin.id),
+    username: admin.username,
+    display_name: admin.display_name,
+    bio: admin.bio,
+    has_avatar: Boolean(admin.avatar_file),
+    created_at: admin.created_at,
+    active_sessions: Number(admin.active_sessions),
+  };
+}
+
+async function replaceAvatar(adminId, nextUrl) {
+  const transaction = await db.transaction("write");
+
+  try {
+    const results = await transaction.batch([
+      {
+        sql: "SELECT avatar_file FROM admins WHERE id = ?",
+        args: [adminId],
+      },
+      {
+        sql: "UPDATE admins SET avatar_file = ? WHERE id = ?",
+        args: [nextUrl, adminId],
+      },
+    ]);
+
+    if (!results[0].rows[0] || results[1].rowsAffected !== 1) {
+      throw new ProfileError("Account not found.", 404);
+    }
+
+    await transaction.commit();
+
+    return results[0].rows[0].avatar_file;
+  } catch (error) {
+    if (!transaction.closed) {
+      await transaction.rollback();
+    }
+
+    throw error;
+  } finally {
+    transaction.close();
+  }
+}
+
+// Public photo for the portfolio.
+router.get("/public-avatar", async (req, res) => {
+  const result = await db.execute(`
+    SELECT avatar_file
+    FROM admins
+    ORDER BY id ASC
+    LIMIT 1
+  `);
+
+  const photo = result.rows[0]?.avatar_file;
+
+  if (!photo) {
+    return res.status(404).end();
+  }
+
+  await sendAvatar(res, photo);
+});
+
+// Everything below requires a valid admin session.
+router.use(requireAdmin);
+
 const passwordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
@@ -199,21 +212,18 @@ const uploadLimiter = rateLimit({
   },
 });
 
-/* Photo upload configuration */
 const upload = multer({
   storage: multer.memoryStorage(),
 
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 4 * 1024 * 1024,
     files: 1,
     fields: 0,
-    parts: 1,
+    parts: 2,
   },
 
   fileFilter(req, file, callback) {
-    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-    if (!allowedTypes.has(file.mimetype)) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
       return callback(new ProfileError("Choose a JPG, PNG, or WebP image."));
     }
 
@@ -221,15 +231,13 @@ const upload = multer({
   },
 });
 
-/* Read profile */
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   res.json({
-    profile: getProfile(req.admin.id),
+    profile: await getProfile(req.admin.id),
   });
 });
 
-/* Update display name and bio */
-router.put("/", (req, res) => {
+router.put("/", async (req, res) => {
   const body = requireBody(req.body);
 
   if (typeof body.display_name !== "string" || typeof body.bio !== "string") {
@@ -249,46 +257,39 @@ router.put("/", (req, res) => {
     throw new ProfileError("Bio must be 500 characters or fewer.");
   }
 
-  updateProfile.run(displayName, bio, req.admin.id);
+  const result = await db.execute({
+    sql: `
+      UPDATE admins
+      SET display_name = ?, bio = ?
+      WHERE id = ?
+    `,
+    args: [displayName, bio, req.admin.id],
+  });
+
+  if (result.rowsAffected !== 1) {
+    throw new ProfileError("Account not found.", 404);
+  }
 
   res.json({
-    profile: getProfile(req.admin.id),
+    profile: await getProfile(req.admin.id),
   });
 });
 
-/* Read the current profile photo */
-router.get("/avatar", (req, res, next) => {
-  const admin = findProfile.get(req.admin.id);
+router.get("/avatar", async (req, res) => {
+  const result = await db.execute({
+    sql: "SELECT avatar_file FROM admins WHERE id = ?",
+    args: [req.admin.id],
+  });
 
-  if (!admin?.avatar_file) {
-    return res.status(404).json({
-      error: "No profile photo has been uploaded.",
-    });
+  const photo = result.rows[0]?.avatar_file;
+
+  if (!photo) {
+    throw new ProfileError("No profile photo has been uploaded.", 404);
   }
 
-  res.set("X-Content-Type-Options", "nosniff");
-
-  res.sendFile(
-    avatarPath(admin.avatar_file),
-    {
-      cacheControl: false,
-      lastModified: false,
-    },
-    (error) => {
-      if (!error) return;
-
-      if (error.code === "ENOENT" && !res.headersSent) {
-        return res.status(404).type("json").json({
-          error: "Profile photo not found.",
-        });
-      }
-
-      next(error);
-    },
-  );
+  await sendAvatar(res, photo);
 });
 
-/* Upload or replace a profile photo */
 router.post(
   "/avatar",
   uploadLimiter,
@@ -321,65 +322,41 @@ router.post(
         .toBuffer();
     } catch {
       throw new ProfileError(
-        "Use a valid, non-animated JPG, PNG, or WebP image under 5 MB and 25 megapixels.",
+        "Use a valid, non-animated JPG, PNG, or WebP image under 25 megapixels.",
       );
     }
 
-    const filename = `${randomUUID()}.webp`;
-
-    await writeFile(avatarPath(filename), image, {
-      flag: "wx",
+    const blob = await put(`avatars/${randomUUID()}.webp`, image, {
+      token: blobToken(),
+      access: "public",
+      contentType: "image/webp",
+      addRandomSuffix: true,
+      allowOverwrite: false,
     });
 
-    let previousAvatar;
+    // Check that the configured token belongs to your image store.
+    const nextUrl = avatarUrl(blob.url);
 
-    try {
-      previousAvatar = db.transaction(() => {
-        const admin = findProfile.get(req.admin.id);
+    const previousAvatar = await replaceAvatar(req.admin.id, nextUrl);
 
-        if (!admin) {
-          throw new ProfileError("Account not found.", 404);
-        }
-
-        updateAvatar.run(filename, req.admin.id);
-
-        return admin.avatar_file;
-      })();
-    } catch (error) {
-      await removeAvatarFile(filename);
-      throw error;
-    }
-
-    await removeAvatarFile(previousAvatar);
+    await removeAvatar(previousAvatar);
 
     res.json({
-      profile: getProfile(req.admin.id),
+      profile: await getProfile(req.admin.id),
     });
   },
 );
 
-/* Remove the current profile photo */
 router.delete("/avatar", async (req, res) => {
-  const previousAvatar = db.transaction(() => {
-    const admin = findProfile.get(req.admin.id);
+  const previousAvatar = await replaceAvatar(req.admin.id, "");
 
-    if (!admin) {
-      throw new ProfileError("Account not found.", 404);
-    }
-
-    updateAvatar.run("", req.admin.id);
-
-    return admin.avatar_file;
-  })();
-
-  await removeAvatarFile(previousAvatar);
+  await removeAvatar(previousAvatar);
 
   res.json({
-    profile: getProfile(req.admin.id),
+    profile: await getProfile(req.admin.id),
   });
 });
 
-/* Change password and invalidate all existing sessions */
 router.post("/password", passwordLimiter, async (req, res) => {
   const body = requireBody(req.body);
 
@@ -415,60 +392,83 @@ router.post("/password", passwordLimiter, async (req, res) => {
     );
   }
 
-  const admin = findPassword.get(req.admin.id);
+  const result = await db.execute({
+    sql: "SELECT password_hash FROM admins WHERE id = ?",
+    args: [req.admin.id],
+  });
+
+  const admin = result.rows[0];
 
   if (!admin) {
     throw new ProfileError("Account not found.", 404);
   }
 
-  const correctPassword = await verifyPassword(
-    currentPassword,
-    admin.password_hash,
-  );
+  const correct = await verifyPassword(currentPassword, admin.password_hash);
 
-  if (!correctPassword) {
+  if (!correct) {
     throw new ProfileError("Your current password is incorrect.");
   }
 
+  // Keep expensive hashing outside the database transaction.
   const newHash = await hashPassword(newPassword);
 
-  db.transaction(() => {
-    const result = updatePassword.run(
-      newHash,
-      req.admin.id,
-      admin.password_hash,
-    );
+  const transaction = await db.transaction("write");
 
-    if (!result.changes) {
+  try {
+    const updated = await transaction.execute({
+      sql: `
+        UPDATE admins
+        SET password_hash = ?
+        WHERE id = ? AND password_hash = ?
+      `,
+      args: [newHash, req.admin.id, admin.password_hash],
+    });
+
+    if (updated.rowsAffected !== 1) {
       throw new ProfileError(
         "Your password changed during this request. Please sign in again.",
         409,
       );
     }
 
-    removeAllSessions.run(req.admin.id);
-  })();
+    await transaction.execute({
+      sql: "DELETE FROM sessions WHERE admin_id = ?",
+      args: [req.admin.id],
+    });
+
+    await transaction.commit();
+  } catch (error) {
+    if (!transaction.closed) {
+      await transaction.rollback();
+    }
+
+    throw error;
+  } finally {
+    transaction.close();
+  }
 
   res.json({
     message: "Password changed. Please sign in again.",
   });
 });
 
-/* Keep this session and sign out other active sessions */
-router.post("/sessions/revoke-others", (req, res) => {
-  const result = removeOtherSessions.run(
-    req.admin.id,
-    req.sessionTokenHash,
-    Date.now(),
-  );
+router.post("/sessions/revoke-others", async (req, res) => {
+  const result = await db.execute({
+    sql: `
+      DELETE FROM sessions
+      WHERE admin_id = ?
+        AND token_hash <> ?
+        AND expires_at > ?
+    `,
+    args: [req.admin.id, req.sessionTokenHash, Date.now()],
+  });
 
   res.json({
-    revoked: result.changes,
-    profile: getProfile(req.admin.id),
+    revoked: result.rowsAffected,
+    profile: await getProfile(req.admin.id),
   });
 });
 
-/* Profile and upload errors */
 router.use((error, req, res, next) => {
   if (res.headersSent) {
     return next(error);
@@ -478,7 +478,7 @@ router.use((error, req, res, next) => {
     return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({
       error:
         error.code === "LIMIT_FILE_SIZE"
-          ? "Choose an image smaller than 5 MB."
+          ? "Choose an image that is 4 MB or smaller."
           : "Upload one image using the avatar field.",
     });
   }

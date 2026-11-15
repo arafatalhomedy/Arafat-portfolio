@@ -10,8 +10,10 @@ import { apiRequest } from "./api";
 import "./styles/Admin.css";
 import "./styles/AdminScrollbar.css";
 import { notifyPortfolioUpdated } from "../components/PortfolioContent";
+import useAdminSession from "./hooks/useAdminSession";
 export default function Admin() {
-  const [session, setSession] = useState(null);
+  const { session, setSession, restoring, restoreError, retryRestore } =
+    useAdminSession();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -29,29 +31,23 @@ export default function Admin() {
     setSession(null);
     setCounts(null);
     setNotice("Your session has expired. Please sign in again.");
-  }, []);
+  }, [setSession]);
 
-  // Sessions are kept in memory. Refreshing requires signing in again.
+  // Keep the original expiry when restoring a saved session.
   useEffect(() => {
     if (!session) return;
 
     const remaining = session.expiresAt - Date.now();
 
-    const expireSession = () => {
-      setSession(null);
-      setCounts(null);
-      setNotice("Your session expired. Please sign in again.");
-    };
-
     if (remaining <= 0) {
-      expireSession();
+      handleSessionExpired();
       return;
     }
 
-    const timer = window.setTimeout(expireSession, remaining);
+    const timer = window.setTimeout(handleSessionExpired, remaining);
 
     return () => window.clearTimeout(timer);
-  }, [session]);
+  }, [session, handleSessionExpired]);
 
   useEffect(() => {
     if (!session) return;
@@ -156,7 +152,51 @@ export default function Admin() {
       setBusy(false);
     }
   }
+  if (restoring || restoreError) {
+    return (
+      <main className="admin-page admin-login-page">
+        <div className="admin-login-wrap">
+          <section className="admin-login-card" aria-busy={restoring}>
+            <p className="admin-eyebrow">PORTFOLIO ADMIN</p>
 
+            <h1 id="admin-session-title">
+              {restoring
+                ? "Checking your session…"
+                : "Unable to restore your session"}
+            </h1>
+
+            {restoring ? (
+              <p className="admin-subtitle" role="status">
+                Please wait while we verify your sign-in.
+              </p>
+            ) : (
+              <>
+                <p className="admin-error" role="alert">
+                  {restoreError}
+                </p>
+
+                <button
+                  className="admin-button"
+                  type="button"
+                  onClick={retryRestore}
+                >
+                  Retry connection
+                </button>
+
+                <button
+                  className="admin-back-link"
+                  type="button"
+                  onClick={() => setSession(null)}
+                >
+                  Return to sign in
+                </button>
+              </>
+            )}
+          </section>
+        </div>
+      </main>
+    );
+  }
   if (!session) {
     return (
       <main className="admin-page admin-login-page">

@@ -19,7 +19,10 @@ export function configureSecurity(app) {
   ]);
 
   app.disable("x-powered-by");
-
+  // Trust Vercel's gateway only when running on Vercel.
+  if (process.env.VERCEL === "1") {
+    app.set("trust proxy", 1);
+  }
   app.use(
     helmet({
       // Public screenshots and your avatar appear on another origin.

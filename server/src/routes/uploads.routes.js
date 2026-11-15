@@ -1,29 +1,19 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
+import { put } from "@vercel/blob";
+import { randomUUID } from "node:crypto";
 import multer from "multer";
 import sharp from "sharp";
-
-import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
 
 import { requireAdmin } from "./auth.routes.js";
 
 const router = Router();
 
-const directory = fileURLToPath(
-  new URL("../../uploads/projects/", import.meta.url),
-);
-
-mkdirSync(directory, { recursive: true });
-
 const upload = multer({
   storage: multer.memoryStorage(),
 
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: 4 * 1024 * 1024,
     files: 1,
     fields: 0,
     parts: 2,
@@ -45,6 +35,7 @@ const upload = multer({
 const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 30,
+  keyGenerator: (req) => String(req.admin.id),
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -52,39 +43,6 @@ const uploadLimiter = rateLimit({
   },
 });
 
-/* Portfolio visitors can view uploaded screenshots. */
-router.get("/projects/:filename", (req, res, next) => {
-  const { filename } = req.params;
-
-  if (
-    !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.webp$/i.test(
-      filename,
-    )
-  ) {
-    return res.status(404).end();
-  }
-
-  res.set("X-Content-Type-Options", "nosniff");
-
-  res.sendFile(
-    path.join(directory, filename),
-    {
-      maxAge: "1y",
-      immutable: true,
-    },
-    (error) => {
-      if (!error) return;
-
-      if (error.code === "ENOENT" && !res.headersSent) {
-        return res.status(404).end();
-      }
-
-      next(error);
-    },
-  );
-});
-
-/* Only the signed-in administrator can upload. */
 router.post(
   "/project-image",
   requireAdmin,
@@ -95,6 +53,12 @@ router.post(
       return res.status(400).json({
         error: "Choose an image first.",
       });
+    }
+
+    const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+
+    if (!token) {
+      throw new Error("Blob storage is not configured.");
     }
 
     let buffer;
@@ -127,29 +91,37 @@ router.post(
         .toBuffer();
     } catch {
       return res.status(400).json({
-        error: "This image cannot be processed. Try another image.",
+        error:
+          "This image cannot be processed. Use a valid image under 25 megapixels.",
       });
     }
 
-    const filename = `${randomUUID()}.webp`;
-
-    await writeFile(path.join(directory, filename), buffer, {
-      flag: "wx",
+    const blob = await put(`projects/${randomUUID()}.webp`, buffer, {
+      token,
+      access: "public",
+      contentType: "image/webp",
+      addRandomSuffix: true,
+      allowOverwrite: false,
     });
 
+    // The existing frontend helper also accepts an absolute URL.
     res.status(201).json({
-      path: `/api/uploads/projects/${filename}`,
+      path: blob.url,
     });
   },
 );
 
 router.use((error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
   if (error instanceof multer.MulterError) {
-    return res.status(400).json({
+    return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({
       error:
         error.code === "LIMIT_FILE_SIZE"
-          ? "The image must be smaller than 10 MB."
-          : "Upload one image at a time.",
+          ? "The image must be 4 MB or smaller."
+          : "Upload one image using the image field.",
     });
   }
 

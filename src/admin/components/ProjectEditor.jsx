@@ -100,8 +100,8 @@ export default function ProjectEditor({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("The image must be smaller than 10 MB.");
+    if (file.size > 4 * 1024 * 1024) {
+      setError("The image must be 4 MB or smaller.");
       return;
     }
 
@@ -395,7 +395,7 @@ export default function ProjectEditor({
             <p className="project-editor-hint project-image-filename">
               {imageFile
                 ? `${imageFile.name} · ${(imageFile.size / 1024 / 1024).toFixed(2)} MB`
-                : "JPG, PNG, or WebP · Maximum 10 MB"}
+                : "JPG, PNG, or WebP · Maximum 4 MB"}
             </p>
 
             <p className="project-editor-hint">

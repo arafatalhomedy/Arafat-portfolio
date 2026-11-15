@@ -10,19 +10,21 @@ import uploadsRouter from "./routes/uploads.routes.js";
 
 const app = express();
 
-const port = Number(process.env.PORT || 3001);
-const host = process.env.HOST || "127.0.0.1";
-
 configureSecurity(app);
 
 app.use(express.json({ limit: "100kb" }));
+
+app.use("/api", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
 
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/uploads", uploadsRouter);
 
-const projectsQuery = db.prepare(`
+const projectsQuery = `
   SELECT
     id,
     title,
@@ -35,9 +37,9 @@ const projectsQuery = db.prepare(`
   FROM projects
   WHERE is_published = 1
   ORDER BY sort_order ASC, id ASC
-`);
+`;
 
-const skillsQuery = db.prepare(`
+const skillsQuery = `
   SELECT
     id,
     title,
@@ -47,9 +49,9 @@ const skillsQuery = db.prepare(`
   FROM skills
   WHERE is_published = 1
   ORDER BY sort_order ASC, id ASC
-`);
+`;
 
-const servicesQuery = db.prepare(`
+const servicesQuery = `
   SELECT
     id,
     title,
@@ -60,32 +62,39 @@ const servicesQuery = db.prepare(`
   FROM services
   WHERE is_published = 1
   ORDER BY sort_order ASC, id ASC
-`);
+`;
 
-function getProjects() {
-  return projectsQuery.all().map((project) => ({
+const avatarQuery = `
+  SELECT avatar_file
+  FROM admins
+  ORDER BY id ASC
+  LIMIT 1
+`;
+
+function serializeProjects(rows) {
+  return rows.map((project) => ({
     ...project,
     tags: JSON.parse(project.tags),
     live: project.live || null,
   }));
 }
 
-function getSkills() {
-  return skillsQuery.all().map((skill) => ({
+function serializeSkills(rows) {
+  return rows.map((skill) => ({
     ...skill,
     categories: JSON.parse(skill.categories),
   }));
 }
 
-function getServices() {
-  return servicesQuery.all().map((service) => ({
+function serializeServices(rows) {
+  return rows.map((service) => ({
     ...service,
     tags: JSON.parse(service.tags),
   }));
 }
 
-app.get("/api/health", (req, res) => {
-  db.prepare("SELECT 1").get();
+app.get("/api/health", async (req, res) => {
+  await db.execute("SELECT 1");
 
   res.json({
     status: "ok",
@@ -93,23 +102,35 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.get("/api/projects", (req, res) => {
-  res.json(getProjects());
+app.get("/api/projects", async (req, res) => {
+  const result = await db.execute(projectsQuery);
+
+  res.json(serializeProjects(result.rows));
 });
 
-app.get("/api/skills", (req, res) => {
-  res.json(getSkills());
+app.get("/api/skills", async (req, res) => {
+  const result = await db.execute(skillsQuery);
+
+  res.json(serializeSkills(result.rows));
 });
 
-app.get("/api/services", (req, res) => {
-  res.json(getServices());
+app.get("/api/services", async (req, res) => {
+  const result = await db.execute(servicesQuery);
+
+  res.json(serializeServices(result.rows));
 });
 
-app.get("/api/content", (req, res) => {
+app.get("/api/content", async (req, res) => {
+  const results = await db.batch(
+    [projectsQuery, skillsQuery, servicesQuery, avatarQuery],
+    "read",
+  );
+
   res.json({
-    projects: getProjects(),
-    skills: getSkills(),
-    services: getServices(),
+    projects: serializeProjects(results[0].rows),
+    skills: serializeSkills(results[1].rows),
+    services: serializeServices(results[2].rows),
+    avatar: results[3].rows[0]?.avatar_file || "",
   });
 });
 
@@ -120,7 +141,8 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
-  console.error(error);
+  // Avoid logging request bodies, passwords, or authorization headers.
+  console.error("API request failed:", error.code || error.name || "Error");
 
   if (res.headersSent) {
     return next(error);
@@ -143,16 +165,25 @@ app.use((error, req, res, next) => {
   });
 });
 
-const server = app.listen(port, host, () => {
-  console.log(`Portfolio API running at http://${host}:${port}`);
-});
+// Vercel runs the exported application.
+// Local development starts its own HTTP server.
+if (!process.env.VERCEL) {
+  const port = Number(process.env.PORT || 3001);
+  const host = process.env.HOST || "127.0.0.1";
 
-function shutdown() {
-  server.close(() => {
-    db.close();
-    process.exit(0);
+  const server = app.listen(port, host, () => {
+    console.log(`Portfolio API running at http://${host}:${port}`);
   });
+
+  function shutdown() {
+    server.close(() => {
+      db.close();
+      process.exit(0);
+    });
+  }
+
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 }
 
-process.once("SIGINT", shutdown);
-process.once("SIGTERM", shutdown);
+export default app;

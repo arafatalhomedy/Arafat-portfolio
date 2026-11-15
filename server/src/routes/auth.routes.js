@@ -1,53 +1,34 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
 import { createHash, randomBytes } from "node:crypto";
-import {
-  getLoginBlock,
-  recordFailedLogin,
-  clearFailedLogins,
-} from "../utils/login-attempts.js";
-import db from "../config/database.js";
-import { hashPassword, verifyPassword } from "../utils/passwords.js";
-const router = Router();
 
+import db from "../config/database.js";
+import { getLoginBlock, recordFailedLogin } from "../utils/login-attempts.js";
+import { hashPassword, verifyPassword } from "../utils/passwords.js";
+
+const router = Router();
 const sessionDuration = 60 * 60 * 1000;
 
+// Unknown usernames still go through password verification.
 const dummyPasswordHash = await hashPassword(randomBytes(32).toString("hex"));
 
-function hashToken(token) {
-  return createHash("sha256").update(token).digest("hex");
+function sha256(value) {
+  return createHash("sha256").update(value).digest("hex");
 }
 
-const findAdmin = db.prepare(`
-  SELECT id, username, password_hash
-  FROM admins
-  WHERE username = ?
-`);
+function sendBlocked(res, blockedUntil) {
+  const seconds = Math.max(1, Math.ceil((blockedUntil - Date.now()) / 1000));
 
-const findSession = db.prepare(`
-  SELECT
-    sessions.token_hash,
-    sessions.expires_at,
-    admins.id,
-    admins.username
-  FROM sessions
-  JOIN admins ON admins.id = sessions.admin_id
-  WHERE sessions.token_hash = ?
-    AND sessions.expires_at > ?
-`);
+  const minutes = Math.ceil(seconds / 60);
 
-const createSession = db.prepare(`
-  INSERT INTO sessions (token_hash, admin_id, expires_at)
-  VALUES (?, ?, ?)
-`);
+  res.set("Retry-After", String(seconds));
 
-const deleteSession = db.prepare(`
-  DELETE FROM sessions WHERE token_hash = ?
-`);
-
-const clearExpiredSessions = db.prepare(`
-  DELETE FROM sessions WHERE expires_at <= ?
-`);
+  return res.status(429).json({
+    error:
+      "Login is locked after too many incorrect attempts. " +
+      `Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
+  });
+}
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -59,7 +40,7 @@ const loginLimiter = rateLimit({
   },
 });
 
-export function requireAdmin(req, res, next) {
+export async function requireAdmin(req, res, next) {
   res.set("Cache-Control", "no-store");
 
   const authorization = req.get("Authorization") || "";
@@ -71,8 +52,22 @@ export function requireAdmin(req, res, next) {
     });
   }
 
-  const tokenHash = hashToken(match[1]);
-  const session = findSession.get(tokenHash, Date.now());
+  const tokenHash = sha256(match[1]);
+
+  const result = await db.execute({
+    sql: `
+      SELECT
+        admins.id,
+        admins.username
+      FROM sessions
+      JOIN admins ON admins.id = sessions.admin_id
+      WHERE sessions.token_hash = ?
+        AND sessions.expires_at > ?
+    `,
+    args: [tokenHash, Date.now()],
+  });
+
+  const session = result.rows[0];
 
   if (!session) {
     return res.status(401).json({
@@ -81,7 +76,7 @@ export function requireAdmin(req, res, next) {
   }
 
   req.admin = {
-    id: session.id,
+    id: Number(session.id),
     username: session.username,
   };
 
@@ -113,42 +108,34 @@ router.post("/login", loginLimiter, async (req, res) => {
 
   const normalizedUsername = username.trim().toLowerCase();
 
-  function sendBlocked(blockedUntil) {
-    const seconds = Math.max(1, Math.ceil((blockedUntil - Date.now()) / 1000));
-
-    const minutes = Math.ceil(seconds / 60);
-
-    res.set("Retry-After", String(seconds));
-
-    return res.status(429).json({
-      error:
-        `Login is locked after too many incorrect attempts. ` +
-        `Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
-    });
-  }
-
-  const existingBlock = getLoginBlock(normalizedUsername);
+  const existingBlock = await getLoginBlock(normalizedUsername);
 
   if (existingBlock) {
-    return sendBlocked(existingBlock);
+    return sendBlocked(res, existingBlock);
   }
 
-  const admin = findAdmin.get(normalizedUsername);
+  const result = await db.execute({
+    sql: `
+      SELECT id, username, password_hash
+      FROM admins
+      WHERE username = ?
+    `,
+    args: [normalizedUsername],
+  });
 
+  const admin = result.rows[0];
+
+  // Password verification happens outside the database transaction.
   const validPassword = await verifyPassword(
     password,
     admin?.password_hash || dummyPasswordHash,
   );
 
-  if (
-    !admin ||
-    !validPassword ||
-    findAdmin.get(normalizedUsername)?.password_hash !== admin.password_hash
-  ) {
-    const blockedUntil = recordFailedLogin(normalizedUsername);
+  if (!admin || !validPassword) {
+    const blockedUntil = await recordFailedLogin(normalizedUsername);
 
     if (blockedUntil) {
-      return sendBlocked(blockedUntil);
+      return sendBlocked(res, blockedUntil);
     }
 
     return res.status(401).json({
@@ -156,29 +143,102 @@ router.post("/login", loginLimiter, async (req, res) => {
     });
   }
 
-  // Another request may have triggered a lock during verification.
-  const latestBlock = getLoginBlock(normalizedUsername);
-
-  if (latestBlock) {
-    return sendBlocked(latestBlock);
-  }
-
-  clearFailedLogins(normalizedUsername);
-
-  const now = Date.now();
-  const expiresAt = now + sessionDuration;
   const token = randomBytes(32).toString("hex");
+  const usernameHash = sha256(normalizedUsername);
 
-  clearExpiredSessions.run(now);
-  createSession.run(hashToken(token), admin.id, expiresAt);
+  let signedInAdmin;
+  let expiresAt;
+
+  // Recheck the password hash and lock before creating a session.
+  const transaction = await db.transaction("write");
+
+  try {
+    const freshResult = await transaction.execute({
+      sql: `
+        SELECT
+          admins.id,
+          admins.username,
+          admins.password_hash,
+          COALESCE(login_attempts.blocked_until, 0) AS blocked_until
+        FROM admins
+        LEFT JOIN login_attempts
+          ON login_attempts.username_hash = ?
+        WHERE admins.id = ?
+      `,
+      args: [usernameHash, admin.id],
+    });
+
+    const freshAdmin = freshResult.rows[0];
+    const blockedUntil = Number(freshAdmin?.blocked_until || 0);
+
+    if (blockedUntil > Date.now()) {
+      await transaction.rollback();
+      return sendBlocked(res, blockedUntil);
+    }
+
+    if (
+      !freshAdmin ||
+      freshAdmin.username !== normalizedUsername ||
+      freshAdmin.password_hash !== admin.password_hash
+    ) {
+      await transaction.rollback();
+
+      return res.status(401).json({
+        error: "Incorrect username or password.",
+      });
+    }
+
+    const now = Date.now();
+    expiresAt = now + sessionDuration;
+
+    await transaction.batch([
+      {
+        sql: `
+          DELETE FROM login_attempts
+          WHERE username_hash = ?
+        `,
+        args: [usernameHash],
+      },
+      {
+        sql: `
+          DELETE FROM sessions
+          WHERE expires_at <= ?
+        `,
+        args: [now],
+      },
+      {
+        sql: `
+          INSERT INTO sessions (
+            token_hash,
+            admin_id,
+            expires_at
+          )
+          VALUES (?, ?, ?)
+        `,
+        args: [sha256(token), freshAdmin.id, expiresAt],
+      },
+    ]);
+
+    await transaction.commit();
+
+    signedInAdmin = {
+      id: Number(freshAdmin.id),
+      username: freshAdmin.username,
+    };
+  } catch (error) {
+    if (!transaction.closed) {
+      await transaction.rollback();
+    }
+
+    throw error;
+  } finally {
+    transaction.close();
+  }
 
   res.json({
     token,
     expiresAt,
-    admin: {
-      id: admin.id,
-      username: admin.username,
-    },
+    admin: signedInAdmin,
   });
 });
 
@@ -188,8 +248,15 @@ router.get("/me", requireAdmin, (req, res) => {
   });
 });
 
-router.post("/logout", requireAdmin, (req, res) => {
-  deleteSession.run(req.sessionTokenHash);
+router.post("/logout", requireAdmin, async (req, res) => {
+  await db.execute({
+    sql: `
+      DELETE FROM sessions
+      WHERE token_hash = ?
+    `,
+    args: [req.sessionTokenHash],
+  });
+
   res.status(204).end();
 });
 

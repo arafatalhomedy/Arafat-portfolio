@@ -185,45 +185,38 @@ function serialize(row, definition) {
 
 // Table names come only from this fixed definitions object.
 for (const [kind, definition] of Object.entries(definitions)) {
-  const listItems = db.prepare(`
-    SELECT *
-    FROM ${kind}
-    ORDER BY sort_order ASC, id ASC
-  `);
+  router.get(`/${kind}`, async (req, res) => {
+    const result = await db.execute({
+      sql: `
+        SELECT *
+        FROM ${kind}
+        ORDER BY sort_order ASC, id ASC
+      `,
+      args: [],
+    });
 
-  const findItem = db.prepare(`
-    SELECT * FROM ${kind} WHERE id = ?
-  `);
-
-  const removeItem = db.prepare(`
-    DELETE FROM ${kind} WHERE id = ?
-  `);
-
-  router.get(`/${kind}`, (req, res) => {
-    res.json(listItems.all().map((row) => serialize(row, definition)));
+    res.json(result.rows.map((row) => serialize(row, definition)));
   });
 
-  router.post(`/${kind}`, (req, res) => {
+  router.post(`/${kind}`, async (req, res) => {
     const values = validateBody(kind, req.body);
 
     const columns = Object.keys(values);
     const placeholders = columns.map(() => "?").join(", ");
 
-    const result = db
-      .prepare(
-        `
-      INSERT INTO ${kind} (${columns.join(", ")})
-      VALUES (${placeholders})
-    `,
-      )
-      .run(...Object.values(values));
+    const result = await db.execute({
+      sql: `
+        INSERT INTO ${kind} (${columns.join(", ")})
+        VALUES (${placeholders})
+        RETURNING *
+      `,
+      args: Object.values(values),
+    });
 
-    const item = findItem.get(result.lastInsertRowid);
-
-    res.status(201).json(serialize(item, definition));
+    res.status(201).json(serialize(result.rows[0], definition));
   });
 
-  router.put(`/${kind}/:id`, (req, res) => {
+  router.put(`/${kind}/:id`, async (req, res) => {
     const id = readId(req.params.id);
     const values = validateBody(kind, req.body);
 
@@ -231,30 +224,39 @@ for (const [kind, definition] of Object.entries(definitions)) {
       .map((column) => `${column} = ?`)
       .join(", ");
 
-    const result = db
-      .prepare(
-        `
-      UPDATE ${kind}
-      SET ${assignments}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `,
-      )
-      .run(...Object.values(values), id);
+    const result = await db.execute({
+      sql: `
+        UPDATE ${kind}
+        SET ${assignments}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        RETURNING *
+      `,
+      args: [...Object.values(values), id],
+    });
 
-    if (!result.changes) {
+    const item = result.rows[0];
+
+    if (!item) {
       return res.status(404).json({
         error: "Item not found.",
       });
     }
 
-    res.json(serialize(findItem.get(id), definition));
+    res.json(serialize(item, definition));
   });
 
-  router.delete(`/${kind}/:id`, (req, res) => {
+  router.delete(`/${kind}/:id`, async (req, res) => {
     const id = readId(req.params.id);
-    const result = removeItem.run(id);
 
-    if (!result.changes) {
+    const result = await db.execute({
+      sql: `
+        DELETE FROM ${kind}
+        WHERE id = ?
+      `,
+      args: [id],
+    });
+
+    if (result.rowsAffected === 0) {
       return res.status(404).json({
         error: "Item not found.",
       });
